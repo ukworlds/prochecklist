@@ -154,18 +154,31 @@
             flex-direction: column;
             gap: 12px;
             transition: all 0.2s ease;
+            height: auto;
         }
 
         .checklist-item.status-ns { border-left-color: var(--color-ns); }
         .checklist-item.status-ip { border-left-color: var(--color-ip); }
         .checklist-item.status-cp { border-left-color: var(--color-cp); }
 
-        /* Full Width Textarea Container Block */
         .task-input-container { 
             width: 100%; 
         }
         
-        /* IMPROVED: Full width block text area with proper inline height wrap formatting */
+        .task-text-block {
+            width: 100%;
+            height: auto;
+            min-height: min-content;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            line-height: 1.45;
+            padding: 4px 2px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
         .task-editable-input {
             width: 100%;
             padding: 6px 4px;
@@ -182,15 +195,7 @@
             line-height: 1.45;
             box-shadow: none;
         }
-        .task-editable-input.fixed-task {
-            background: transparent;
-            border-color: transparent;
-            padding: 4px 0;
-            color: var(--primary-color);
-            font-size: 16px;
-        }
 
-        /* NEW CONTROL BAR: Houses the Status Group and Camera Icon inline underneath text */
         .item-controls-row {
             display: flex;
             align-items: center;
@@ -198,7 +203,6 @@
             width: 100%;
         }
 
-        /* Segmented Status Buttons take remaining width space */
         .status-group {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -224,7 +228,6 @@
         .status-btn.active[data-status="ip"] { background: var(--color-ip); color: white; }
         .status-btn.active[data-status="cp"] { background: var(--color-cp); color: white; }
 
-        /* Camera Icon positioned cleanly on the right end of the status panel bar */
         .file-wrapper { 
             display: inline-flex; 
             align-items: center;
@@ -259,7 +262,7 @@
         }
         .remark-input:focus { border-color: #94a3b8; background: #fff; outline: none; }
 
-        /* CUSTOM PHOTO WIZARD SHEET MODAL */
+        /* Custom Modal Wizard */
         .custom-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -378,14 +381,13 @@
         .gallery-status-badge { display: inline-block; padding: 3px 8px; font-size: 10px; font-weight: bold; border-radius: 4px; color: white; margin-bottom: 8px; text-transform: uppercase; }
         .gallery-remark { font-size: 12px; color: #475569; background: #f8fafc; padding: 8px; border-radius: 4px; border-left: 3px solid #cbd5e1; }
 
-        /* Media Queries for Screen Layout */
         @media (min-width: 600px) {
             body { padding: 30px; }
             .meta-card { grid-template-columns: repeat(2, 1fr); }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
-        /* PREMIUM PRINT & OUTPUT PDF TARGET ACTIONS */
+        /* PRINT CONFIGURATIONS */
         @media print {
             @page { size: A4 portrait; margin: 15mm 12mm; }
             body { background-color: #fff; padding: 0; font-size: 12px; color: #000; }
@@ -418,6 +420,7 @@
                 gap: 6px !important;
             }
             
+            .task-text-block { padding: 0 !important; font-weight: 700; color: #0f172a !important; font-size: 13px !important; }
             .task-editable-input { border: none !important; padding: 0 !important; font-weight: 700; background: transparent !important; color: #0f172a !important; font-size: 13px !important; height: auto !important; min-height: 0 !important; }
             .remark-input { border: none !important; background: transparent !important; padding: 2px 0 !important; color: #334155 !important; font-size: 12px !important; }
             
@@ -442,8 +445,8 @@
             .gallery-section { page-break-before: always !important; margin-top: 0 !important; padding-top: 10px !important; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
             .gallery-item { page-break-inside: avoid !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important; padding: 10px !important; }
-            .gallery-img { max-height: 180px !important; border-radius: 4px !important; margin-bottom: 6px !important; }
-            .gallery-remark { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-left: 2px solid #cbd5e1 !important; }
+            .gallery-img { max-height: 180px !important; border-radius: 4px !important; margin-bottom: 6px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .gallery-remark { background: #f8fafc !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; border-left: 2px solid #cbd5e1 !important; }
         }
         .pdf-status-tag { display: none; }
     </style>
@@ -478,29 +481,25 @@
         </div>
 
         <div class="category-block">
-            <div class="section-title">2. Rooms & Interior Finishings</div>
-              <div class="item-list" id="sec-2-body"></div>
-              <button class="btn-action btn-add" onclick="createUnifiedRow('sec-2-body', '', false)">➕ Add Custom Element</button>
+           <div class="section-title">3. Plumbing & Sanitary Installation</div>
+           <div class="item-list" id="sec-3-body"></div> 
+           <button class="btn-action btn-add" onclick="createUnifiedRow('sec-3-body', '', false)">➕ Add Custom Element</button>
         </div>
 
         <div class="category-block">
-           <div class="section-title">3. Plumbing & Sanitary Installation</div>
-              <div class="item-list" id="sec-3-body"></div> <button class="btn-action btn-add" onclick="createUnifiedRow('sec-3-body', '', false)">➕ Add Custom Element</button>
+            <div class="section-title">4. Electrical & HVAC Systems</div>
+            <div class="item-list" id="sec-4-body"></div> 
+            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
         </div>
 
-<div class="category-block">
-    <div class="section-title">4. Electrical & HVAC Systems</div>
-    <div class="item-list" id="sec-4-body"></div> <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
-</div>
-
-<div class="category-block">
-    <div class="section-title">4. Electrical & HVAC Systems</div>
-    <div class="item-list" id="sec-5-body"></div> <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
-</div>
+        <div class="category-block">
+            <div class="section-title">5. External Landscaping & Boundaries</div>
+            <div class="item-list" id="sec-5-body"></div> 
+            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-5-body', '', false)">➕ Add Custom Element</button>
+        </div>
     </div>
 
     <button class="btn-action btn-category" onclick="addNewCategoryWindow()">📁 Add Custom Category Section</button>
-
     <button class="btn-action btn-print" onclick="window.print()">🖨️ Print / Save PDF Report</button>
 
     <div class="gallery-section">
@@ -530,11 +529,11 @@
 <script>
     const uploadedImages = {};
     let rowIdCounter = 5000;
-    let sectionIdCounter = 2;
+    let sectionIdCounter = 5;
     let activeModalRowId = null;
 
     function addNewCategoryWindow() {
-        const categoryName = prompt("Enter the name for your new inspection category:", "3. External Landscaping");
+        const categoryName = prompt("Enter the name for your new inspection category:", "6. Miscellaneous Inspections");
         if (!categoryName || categoryName.trim() === "") return;
 
         sectionIdCounter++;
@@ -553,70 +552,63 @@
         createUnifiedRow(customSecBodyId, '', false);
     }
 
-    // FIXED: Separated layout so the camera icon lives underneath the text space block
-   // UPDATED UNIFIED ROW FUNCTION WITH AUTO-EXPAND FIX
-function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
-    rowIdCounter++;
-    const container = document.getElementById(targetContainerId);
-    if (!container) return;
-    const rowId = "row-" + rowIdCounter;
-    
-    const card = document.createElement('div');
-    card.className = 'checklist-item status-ns';
-    card.id = rowId;
-    card.setAttribute('data-status-state', 'ns');
-    
-    let headerContentHTML = '';
-    if(isFixed) {
-        headerContentHTML = `<div class="task-text-block">${fixedTaskText}</div>`;
-    } else {
-        // FIXED: Switched inline style height logic to automatically accommodate long text dynamically
-        headerContentHTML = `
-            <textarea class="task-editable-input" 
-                      placeholder="Describe element name or task criteria..." 
-                      oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
-        `;
-    }
-
-    card.innerHTML = `
-        <div class="task-input-container">
-            ${headerContentHTML}
-        </div>
+    function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
+        rowIdCounter++;
+        const container = document.getElementById(targetContainerId);
+        if (!container) return;
+        const rowId = "row-" + rowIdCounter;
         
-        <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
+        const card = document.createElement('div');
+        card.className = 'checklist-item status-ns';
+        card.id = rowId;
+        card.setAttribute('data-status-state', 'ns');
+        
+        let headerContentHTML = '';
+        if(isFixed) {
+            headerContentHTML = `<div class="task-text-block">${fixedTaskText}</div>`;
+        } else {
+            headerContentHTML = `
+                <textarea class="task-editable-input" 
+                          placeholder="Describe element name or task criteria..." 
+                          oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
+            `;
+        }
 
-        <div class="item-controls-row">
-            <div class="status-group">
-                <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
-                <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
-                <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
+        card.innerHTML = `
+            <div class="task-input-container">
+                ${headerContentHTML}
             </div>
-            <div class="file-wrapper">
-                <label class="file-label" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')" title="Capture Photo">📸</label>
-                <input type="file" id="file-browse-${rowId}" class="file-input" accept="image/*" onchange="handleImageUpload(this, '${rowId}')">
-                <input type="file" id="file-camera-${rowId}" class="file-input" accept="image/*" capture="environment" onchange="handleImageUpload(this, '${rowId}')">
-            </div>
-        </div>
+            
+            <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
 
-        <input type="text" class="remark-input" placeholder="Enter notes, observations, or action items..." oninput="updateGallery()">
-    `;
-    container.appendChild(card);
-    
-    // Trigger initial calculation loop for text inputs to prevent hidden text on load
-    if(!isFixed) {
-        const txt = card.querySelector('.task-editable-input');
-        setTimeout(() => autoExpandTextarea(txt), 50);
+            <div class="item-controls-row">
+                <div class="status-group">
+                    <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
+                    <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
+                    <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
+                </div>
+                <div class="file-wrapper">
+                    <label class="file-label" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')" title="Capture Photo">📸</label>
+                    <input type="file" id="file-browse-${rowId}" class="file-input" accept="image/*" onchange="handleImageUpload(this, '${rowId}')">
+                    <input type="file" id="file-camera-${rowId}" class="file-input" accept="image/*" capture="environment" onchange="handleImageUpload(this, '${rowId}')">
+                </div>
+            </div>
+
+            <input type="text" class="remark-input" placeholder="Enter notes, observations, or action items..." oninput="updateGallery()">
+        `;
+        container.appendChild(card);
+        
+        if(!isFixed) {
+            const txt = card.querySelector('.task-editable-input');
+            setTimeout(() => autoExpandTextarea(txt), 50);
+        }
     }
-}
 
-    // FIXED: Re-engineered dynamic expansion logic to prevent cutoffs
-    // FIXED: Bulletproof layout resizing calculations
-function autoExpandTextarea(textarea) {
-    if(!textarea) return;
-    textarea.style.height = 'auto';
-    // scrollHeight calculates the exact depth of the hidden multi-line text wrapping blocks
-    textarea.style.height = (textarea.scrollHeight) + 'px';
-}
+    function autoExpandTextarea(textarea) {
+        if(!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
 
     function openPhotoWizard(rowId) {
         activeModalRowId = rowId;
@@ -674,7 +666,7 @@ function autoExpandTextarea(textarea) {
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 let width = img.width; let height = img.height;
-                const max_size = 800; 
+                const max_size = 1000; 
 
                 if (width > height) {
                     if (width > max_size) { height *= max_size / width; width = max_size; }
@@ -686,7 +678,7 @@ function autoExpandTextarea(textarea) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                uploadedImages[rowId] = canvas.toDataURL('image/jpeg', 0.7);
+                uploadedImages[rowId] = canvas.toDataURL('image/jpeg', 0.85);
                 label.innerText = "✓";
                 label.classList.add('has-file');
                 updateGallery();
@@ -709,7 +701,15 @@ function autoExpandTextarea(textarea) {
             const card = document.getElementById(id);
             if (!card) return;
 
-            const nameText = card.querySelector('.task-editable-input').value.trim() || "Custom Item Log";
+            let nameText = "Custom Item Log";
+            const inlineTextEl = card.querySelector('.task-text-block');
+            if(inlineTextEl) {
+                nameText = inlineTextEl.innerText.trim();
+            } else {
+                const inputEl = card.querySelector('.task-editable-input');
+                if(inputEl) nameText = inputEl.value.trim() || "Custom Item Log";
+            }
+
             const remarkValue = card.querySelector('.remark-input').value || "No remarks stated.";
             const statusState = card.getAttribute('data-status-state');
             const base64 = uploadedImages[id];
@@ -732,25 +732,24 @@ function autoExpandTextarea(textarea) {
     }
 
     window.onload = function() {
-    // SECTION 1: General Structural Elements
-    createUnifiedRow('sec-1-body', 'Main Foundation & External Waterproofing Baseline Check', true);
-    createUnifiedRow('sec-1-body', 'Structural Columns Alignment & Concrete Pour Load Assessment Checks', true);
-    // ➕ ADD MORE FOR SECTION 1 HERE:
-    createUnifiedRow('sec-1-body', 'Your new custom structural checklist item goes here', true);
-    createUnifiedRow('sec-1-body', 'Another custom structural element check', true);
+        // SECTION 1: General Structural Elements
+        createUnifiedRow('sec-1-body', 'Main Foundation & External Waterproofing Baseline Check', true);
+        createUnifiedRow('sec-1-body', 'Structural Columns Alignment & Concrete Pour Load Assessment Checks', true);
 
-    // SECTION 2: Rooms & Interior Finishings
-    createUnifiedRow('sec-2-body', 'Flooring: Tile alignment, leveling, and joint grouting inspection parameters', true);
-    createUnifiedRow('sec-2-body', 'Ceiling & Lights: False ceiling profiles and structural layout alignment controls', true);
-    // ➕ ADD MORE FOR SECTION 2 HERE:
-    createUnifiedRow('sec-2-body', 'Plumbing: Check internal wall concealed pipeline pressure', true);
+        // SECTION 2: Rooms & Interior Finishings
+        createUnifiedRow('sec-2-body', 'Flooring: Tile alignment, leveling, and joint grouting inspection parameters', true);
+        createUnifiedRow('sec-2-body', 'Ceiling & Lights: False ceiling profiles and structural layout alignment controls', true);
 
-    // SECTION 3: Rooms & Interior Finishings
-    createUnifiedRow('sec-3-body', 'Flooring: Tile alignment, leveling, and joint grouting inspection parameters', true);
-    createUnifiedRow('sec-3-body', 'Ceiling & Lights: False ceiling profiles and structural layout alignment controls', true);
-    // ➕ ADD MORE FOR SECTION 2 HERE:
-    createUnifiedRow('sec-2-body', 'Plumbing: Check internal wall concealed pipeline pressure', true);
-};
+        // SECTION 3: Plumbing & Sanitary Installation
+        createUnifiedRow('sec-3-body', 'Water Supply Lines: Pressure test concealed pipeline distribution networks', true);
+        createUnifiedRow('sec-3-body', 'Drainage: Flow slope gradient analysis for bathroom and utility outlets', true);
+
+        // SECTION 4: Electrical & HVAC Systems
+        createUnifiedRow('sec-4-body', 'Main Distribution Board: Earth leakage breaker and circuit load labeling check', true);
+
+        // SECTION 5: External Landscaping & Boundaries
+        createUnifiedRow('sec-5-body', 'Boundary Walls: Structural vertical alignment and plaster integrity inspection', true);
+    };
 </script>
 
 </body>
