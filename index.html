@@ -152,7 +152,7 @@
             border-left: 6px solid var(--color-ns);
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             transition: all 0.2s ease;
         }
 
@@ -160,27 +160,18 @@
         .checklist-item.status-ip { border-left-color: var(--color-ip); }
         .checklist-item.status-cp { border-left-color: var(--color-cp); }
 
-        /* Structural Top Row Layout */
-        .item-top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            width: 100%;
-        }
-
+        /* Full Width Textarea Container Block */
         .task-input-container { 
-            flex: 1; 
-            min-width: 0; 
+            width: 100%; 
         }
         
-        /* RESTORED: Precise spacing limits back to original form baseline specs */
+        /* IMPROVED: Full width block text area with proper inline height wrap formatting */
         .task-editable-input {
             width: 100%;
-            padding: 8px 10px;
+            padding: 6px 4px;
             border: 1px dashed #cbd5e1;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 15px;
             font-family: inherit;
             font-weight: 600;
             background: #fff;
@@ -188,42 +179,26 @@
             display: block;
             resize: none;
             overflow: hidden;
-            min-height: 38px;
-            line-height: 1.4;
+            line-height: 1.45;
+            box-shadow: none;
         }
         .task-editable-input.fixed-task {
             background: transparent;
             border-color: transparent;
-            padding: 6px 0;
+            padding: 4px 0;
             color: var(--primary-color);
-            font-size: 15px;
+            font-size: 16px;
         }
 
-        /* Camera Icon Configurations */
-        .file-wrapper { 
-            display: inline-flex; 
-            align-items: center;
-            flex-shrink: 0; 
-        }
-        .file-label {
+        /* NEW CONTROL BAR: Houses the Status Group and Camera Icon inline underneath text */
+        .item-controls-row {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background-color: #f1f5f9;
-            color: #475569;
-            width: 42px;
-            height: 42px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid var(--border-color);
+            gap: 10px;
+            width: 100%;
         }
-        .file-label:hover { background-color: #e2e8f0; }
-        .file-label.has-file { background-color: #dcfce7; color: var(--secondary-color); border-color: #bbf7d0; }
-        .file-input { display: none; }
 
-        /* Segmented Status Buttons */
+        /* Segmented Status Buttons take remaining width space */
         .status-group {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -231,6 +206,7 @@
             background: #f1f5f9;
             padding: 4px;
             border-radius: 8px;
+            flex: 1;
         }
 
         .status-btn {
@@ -247,6 +223,30 @@
         .status-btn.active[data-status="ns"] { background: var(--color-ns); color: white; }
         .status-btn.active[data-status="ip"] { background: var(--color-ip); color: white; }
         .status-btn.active[data-status="cp"] { background: var(--color-cp); color: white; }
+
+        /* Camera Icon positioned cleanly on the right end of the status panel bar */
+        .file-wrapper { 
+            display: inline-flex; 
+            align-items: center;
+            flex-shrink: 0; 
+        }
+        .file-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f5f9;
+            color: #475569;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+        .file-label:hover { background-color: #e2e8f0; }
+        .file-label.has-file { background-color: #dcfce7; color: var(--secondary-color); border-color: #bbf7d0; }
+        .file-input { display: none; }
 
         .remark-input {
             width: 100%;
@@ -477,6 +477,26 @@
             <button class="btn-action btn-add" onclick="createUnifiedRow('sec-2-body', '', false)">➕ Add Custom Element</button>
         </div>
 
+        <div class="category-block">
+            <div class="section-title">2. Rooms & Interior Finishings</div>
+              <div class="item-list" id="sec-2-body"></div>
+              <button class="btn-action btn-add" onclick="createUnifiedRow('sec-2-body', '', false)">➕ Add Custom Element</button>
+        </div>
+
+        <div class="category-block">
+           <div class="section-title">3. Plumbing & Sanitary Installation</div>
+              <div class="item-list" id="sec-3-body"></div> <button class="btn-action btn-add" onclick="createUnifiedRow('sec-3-body', '', false)">➕ Add Custom Element</button>
+        </div>
+
+<div class="category-block">
+    <div class="section-title">4. Electrical & HVAC Systems</div>
+    <div class="item-list" id="sec-4-body"></div> <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
+</div>
+
+<div class="category-block">
+    <div class="section-title">4. Electrical & HVAC Systems</div>
+    <div class="item-list" id="sec-5-body"></div> <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
+</div>
     </div>
 
     <button class="btn-action btn-category" onclick="addNewCategoryWindow()">📁 Add Custom Category Section</button>
@@ -533,6 +553,7 @@
         createUnifiedRow(customSecBodyId, '', false);
     }
 
+    // FIXED: Separated layout so the camera icon lives underneath the text space block
     function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
         rowIdCounter++;
         const container = document.getElementById(targetContainerId);
@@ -545,12 +566,20 @@
         card.setAttribute('data-status-state', 'ns');
         
         card.innerHTML = `
-            <div class="item-top-row">
-                <div class="task-input-container">
-                    <textarea rows="1" class="task-editable-input ${isFixed ? 'fixed-task' : ''}" 
-                              placeholder="Describe element name or task criteria..." 
-                              ${isFixed ? 'readonly' : ''} 
-                              oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
+            <div class="task-input-container">
+                <textarea rows="1" class="task-editable-input ${isFixed ? 'fixed-task' : ''}" 
+                          placeholder="Describe element name or task criteria..." 
+                          ${isFixed ? 'readonly' : ''} 
+                          oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
+            </div>
+            
+            <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
+
+            <div class="item-controls-row">
+                <div class="status-group">
+                    <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
+                    <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
+                    <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
                 </div>
                 <div class="file-wrapper">
                     <label class="file-label" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')" title="Capture Photo">📸</label>
@@ -558,29 +587,20 @@
                     <input type="file" id="file-camera-${rowId}" class="file-input" accept="image/*" capture="environment" onchange="handleImageUpload(this, '${rowId}')">
                 </div>
             </div>
-            
-            <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
-
-            <div class="status-group">
-                <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
-                <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
-                <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
-            </div>
 
             <input type="text" class="remark-input" placeholder="Enter notes, observations, or action items..." oninput="updateGallery()">
         `;
         container.appendChild(card);
         
-        if(isFixed) {
-            const ta = card.querySelector('.task-editable-input');
-            autoExpandTextarea(ta);
-        }
+        // Force rendering logic expansion updates
+        const ta = card.querySelector('.task-editable-input');
+        autoExpandTextarea(ta);
     }
 
-    // FIXED: Corrected calculations to prevent layout stretching errors
+    // FIXED: Re-engineered dynamic expansion logic to prevent cutoffs
     function autoExpandTextarea(textarea) {
         textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
+        textarea.style.height = (textarea.scrollHeight + 2) + 'px';
     }
 
     function openPhotoWizard(rowId) {
@@ -697,11 +717,25 @@
     }
 
     window.onload = function() {
-        createUnifiedRow('sec-1-body', 'Main Foundation & External Waterproofing Baseline Check', true);
-        createUnifiedRow('sec-1-body', 'Structural Columns Alignment & Concrete Pour Load Assessment Checks', true);
-        createUnifiedRow('sec-2-body', 'Flooring: Tile alignment, leveling, and joint grouting inspection parameters', true);
-        createUnifiedRow('sec-2-body', 'Ceiling & Lights: False ceiling profiles and structural layout alignment controls', true);
-    };
+    // SECTION 1: General Structural Elements
+    createUnifiedRow('sec-1-body', 'Main Foundation & External Waterproofing Baseline Check', true);
+    createUnifiedRow('sec-1-body', 'Structural Columns Alignment & Concrete Pour Load Assessment Checks', true);
+    // ➕ ADD MORE FOR SECTION 1 HERE:
+    createUnifiedRow('sec-1-body', 'Your new custom structural checklist item goes here', true);
+    createUnifiedRow('sec-1-body', 'Another custom structural element check', true);
+
+    // SECTION 2: Rooms & Interior Finishings
+    createUnifiedRow('sec-2-body', 'Flooring: Tile alignment, leveling, and joint grouting inspection parameters', true);
+    createUnifiedRow('sec-2-body', 'Ceiling & Lights: False ceiling profiles and structural layout alignment controls', true);
+    // ➕ ADD MORE FOR SECTION 2 HERE:
+    createUnifiedRow('sec-2-body', 'Plumbing: Check internal wall concealed pipeline pressure', true);
+
+    // SECTION 3: Rooms & Interior Finishings
+    createUnifiedRow('sec-3-body', 'Flooring: Tile alignment, leveling, and joint grouting inspection parameters', true);
+    createUnifiedRow('sec-3-body', 'Ceiling & Lights: False ceiling profiles and structural layout alignment controls', true);
+    // ➕ ADD MORE FOR SECTION 2 HERE:
+    createUnifiedRow('sec-2-body', 'Plumbing: Check internal wall concealed pipeline pressure', true);
+};
 </script>
 
 </body>
