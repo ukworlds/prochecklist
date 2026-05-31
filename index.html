@@ -554,54 +554,69 @@
     }
 
     // FIXED: Separated layout so the camera icon lives underneath the text space block
-    function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
-        rowIdCounter++;
-        const container = document.getElementById(targetContainerId);
-        if (!container) return;
-        const rowId = "row-" + rowIdCounter;
-        
-        const card = document.createElement('div');
-        card.className = 'checklist-item status-ns';
-        card.id = rowId;
-        card.setAttribute('data-status-state', 'ns');
-        
-        card.innerHTML = `
-            <div class="task-input-container">
-                <textarea rows="1" class="task-editable-input ${isFixed ? 'fixed-task' : ''}" 
-                          placeholder="Describe element name or task criteria..." 
-                          ${isFixed ? 'readonly' : ''} 
-                          oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
-            </div>
-            
-            <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
-
-            <div class="item-controls-row">
-                <div class="status-group">
-                    <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
-                    <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
-                    <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
-                </div>
-                <div class="file-wrapper">
-                    <label class="file-label" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')" title="Capture Photo">📸</label>
-                    <input type="file" id="file-browse-${rowId}" class="file-input" accept="image/*" onchange="handleImageUpload(this, '${rowId}')">
-                    <input type="file" id="file-camera-${rowId}" class="file-input" accept="image/*" capture="environment" onchange="handleImageUpload(this, '${rowId}')">
-                </div>
-            </div>
-
-            <input type="text" class="remark-input" placeholder="Enter notes, observations, or action items..." oninput="updateGallery()">
+   // UPDATED UNIFIED ROW FUNCTION WITH AUTO-EXPAND FIX
+function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
+    rowIdCounter++;
+    const container = document.getElementById(targetContainerId);
+    if (!container) return;
+    const rowId = "row-" + rowIdCounter;
+    
+    const card = document.createElement('div');
+    card.className = 'checklist-item status-ns';
+    card.id = rowId;
+    card.setAttribute('data-status-state', 'ns');
+    
+    let headerContentHTML = '';
+    if(isFixed) {
+        headerContentHTML = `<div class="task-text-block">${fixedTaskText}</div>`;
+    } else {
+        // FIXED: Switched inline style height logic to automatically accommodate long text dynamically
+        headerContentHTML = `
+            <textarea class="task-editable-input" 
+                      placeholder="Describe element name or task criteria..." 
+                      oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
         `;
-        container.appendChild(card);
-        
-        // Force rendering logic expansion updates
-        const ta = card.querySelector('.task-editable-input');
-        autoExpandTextarea(ta);
     }
+
+    card.innerHTML = `
+        <div class="task-input-container">
+            ${headerContentHTML}
+        </div>
+        
+        <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
+
+        <div class="item-controls-row">
+            <div class="status-group">
+                <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
+                <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
+                <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
+            </div>
+            <div class="file-wrapper">
+                <label class="file-label" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')" title="Capture Photo">📸</label>
+                <input type="file" id="file-browse-${rowId}" class="file-input" accept="image/*" onchange="handleImageUpload(this, '${rowId}')">
+                <input type="file" id="file-camera-${rowId}" class="file-input" accept="image/*" capture="environment" onchange="handleImageUpload(this, '${rowId}')">
+            </div>
+        </div>
+
+        <input type="text" class="remark-input" placeholder="Enter notes, observations, or action items..." oninput="updateGallery()">
+    `;
+    container.appendChild(card);
+    
+    // Trigger initial calculation loop for text inputs to prevent hidden text on load
+    if(!isFixed) {
+        const txt = card.querySelector('.task-editable-input');
+        setTimeout(() => autoExpandTextarea(txt), 50);
+    }
+}
 
     // FIXED: Re-engineered dynamic expansion logic to prevent cutoffs
-    function autoExpandTextarea(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight + 2) + 'px';
-    }
+    // FIXED: Bulletproof layout resizing calculations
+function autoExpandTextarea(textarea) {
+    if(!textarea) return;
+    textarea.style.height = 'auto';
+    // scrollHeight calculates the exact depth of the hidden multi-line text wrapping blocks
+    textarea.style.height = (textarea.scrollHeight) + 'px';
+}
 
     function openPhotoWizard(rowId) {
         activeModalRowId = rowId;
