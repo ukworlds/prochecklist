@@ -162,19 +162,23 @@
         .checklist-item.status-ip { border-left-color: var(--color-ip); }
         .checklist-item.status-cp { border-left-color: var(--color-cp); }
 
-        /* Compact Top Inline Layout for Inputs */
+        /* Structural Top Row Layout */
         .item-top-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            gap: 12px;
             width: 100%;
         }
 
-        .task-input-container { flex: 1; }
+        .task-input-container { 
+            flex: 1; 
+            min-width: 0; 
+        }
         
         .task-editable-input {
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px;
             border: 1px dashed #cbd5e1;
             border-radius: 6px;
             font-size: 14px;
@@ -182,6 +186,7 @@
             font-weight: 600;
             background: #fff;
             color: var(--primary-color);
+            display: block;
         }
         .task-editable-input.fixed-task {
             background: transparent;
@@ -192,7 +197,11 @@
         }
 
         /* Inline Compact Photo Button Styles */
-        .file-wrapper { display: inline-flex; align-items: center; }
+        .file-wrapper { 
+            display: inline-flex; 
+            align-items: center;
+            flex-shrink: 0;
+        }
         .file-label {
             display: flex;
             align-items: center;
@@ -365,7 +374,6 @@
         <button class="btn-action btn-print" onclick="window.print()">Print / Save PDF</button>
     </header>
 
-    <!-- Project Information Card -->
     <div class="meta-card">
         <div class="meta-field"><label>Project Name</label><input type="text" placeholder="e.g., Plot 42 Villa"></div>
         <div class="meta-field"><label>Lead Inspector</label><input type="text" placeholder="Your Name"></div>
@@ -373,17 +381,14 @@
         <div class="meta-field"><label>Assessment Date</label><input type="date"></div>
     </div>
 
-    <!-- WRAPPER CORE FOR CATEGORIES -->
     <div id="checklist-wrapper">
         
-        <!-- SECTION 1 -->
         <div class="category-block">
             <div class="section-title">1. General Structural Elements</div>
             <div class="item-list" id="sec-1-body"></div>
             <button class="btn-action btn-add" onclick="createUnifiedRow('sec-1-body', '', false)">➕ Add Custom Element</button>
         </div>
 
-        <!-- SECTION 2 -->
         <div class="category-block">
             <div class="section-title">2. Rooms & Interior Finishings</div>
             <div class="item-list" id="sec-2-body"></div>
@@ -392,10 +397,8 @@
 
     </div>
 
-    <!-- GLOBAL ACTION PLACEHOLDER (Cleanly added right under default elements) -->
     <button class="btn-action btn-category" onclick="addNewCategoryWindow()">📁 Add Custom Category Section</button>
 
-    <!-- APPENDIX PREVIEW CARD -->
     <div class="gallery-section">
         <h2 style="color: var(--primary-color); margin: 0 0 6px 0; font-size: 16px; font-weight: 700;">Appendix: Photographic Evidence Log</h2>
         <p id="no-photo-msg" style="color: #64748b; font-style: italic; font-size: 13px; margin: 0;">No photographs attached to report yet.</p>
@@ -408,7 +411,6 @@
     let rowIdCounter = 5000;
     let sectionIdCounter = 2;
 
-    // Dynamic Category Section Generation Engine
     function addNewCategoryWindow() {
         const categoryName = prompt("Enter the name for your new inspection category:", "3. External Landscaping");
         if (!categoryName || categoryName.trim() === "") return;
@@ -429,7 +431,6 @@
         createUnifiedRow(customSecBodyId, '', false);
     }
 
-    // Standardized Element Generation Logic with Inline Camera Controls
     function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
         rowIdCounter++;
         const container = document.getElementById(targetContainerId);
@@ -441,6 +442,8 @@
         card.id = rowId;
         card.setAttribute('data-status-state', 'ns');
         
+        // Note: The file input includes explicit cross-platform accept rules 
+        // to handle native choice management sheets perfectly on Android and iOS.
         card.innerHTML = `
             <div class="item-top-row">
                 <div class="task-input-container">
@@ -450,9 +453,8 @@
                            ${isFixed ? 'readonly' : ''} 
                            oninput="updateGallery()">
                 </div>
-                <!-- Mini Right-Aligned Camera Action Icon -->
                 <div class="file-wrapper">
-                    <label class="file-label" id="lbl-${rowId}" for="file-${rowId}" title="Attach Photo">📸</label>
+                    <label class="file-label" id="lbl-${rowId}" for="file-${rowId}" title="Capture with Camera or Choose File">📸</label>
                     <input type="file" id="file-${rowId}" class="file-input" accept="image/*" onchange="handleImageUpload(this, '${rowId}')">
                 </div>
             </div>
