@@ -9,6 +9,7 @@
             --primary-color: #1e293b; /* Deep Slate */
             --secondary-color: #0f766e; /* Muted Teal Accent */
             --accent-color: #2563eb; /* Royal Blue */
+            --danger-color: #ef4444; /* Soft Red for Delete */
             --bg-color: #f8fafc;
             --card-color: #ffffff;
             --text-color: #334155;
@@ -127,18 +128,51 @@
         }
         .meta-field input:focus { border-color: var(--secondary-color); background: #fff; outline: none; }
 
+        .category-block {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .section-header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 32px 4px 12px 4px;
+            gap: 12px;
+        }
+
         .section-title {
             font-size: 14px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #64748b;
-            margin: 32px 4px 12px 4px;
             display: flex;
             align-items: center;
             gap: 8px;
+            flex: 1;
         }
         .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+
+        .btn-delete-category {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #94a3b8;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-delete-category:hover {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+            background: #fef2f2;
+        }
 
         /* Checklist Dynamic Cards Layout */
         .item-list { display: flex; flex-direction: column; gap: 14px; }
@@ -155,14 +189,22 @@
             gap: 12px;
             transition: all 0.2s ease;
             height: auto;
+            position: relative;
         }
 
         .checklist-item.status-ns { border-left-color: var(--color-ns); }
         .checklist-item.status-ip { border-left-color: var(--color-ip); }
         .checklist-item.status-cp { border-left-color: var(--color-cp); }
 
+        .task-row-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
+        }
+
         .task-input-container { 
-            width: 100%; 
+            flex: 1; 
         }
         
         .task-text-block {
@@ -194,6 +236,21 @@
             overflow: hidden;
             line-height: 1.45;
             box-shadow: none;
+        }
+
+        .btn-delete-item {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .btn-delete-item:hover {
+            color: var(--danger-color);
+            background: #fef2f2;
         }
 
         .item-controls-row {
@@ -405,7 +462,7 @@
             header h1 { font-size: 26px; color: #0f172a !important; }
             header p { color: #475569 !important; font-size: 12px; }
             
-            .btn-action, .btn-add, .btn-category, .file-wrapper, .status-group, .custom-modal-overlay { display: none !important; }
+            .btn-action, .btn-add, .btn-category, .file-wrapper, .status-group, .custom-modal-overlay, .btn-delete-item, .btn-delete-category { display: none !important; }
             
             .meta-card, .checklist-item, .gallery-section { box-shadow: none !important; padding: 0 !important; margin-bottom: 18px !important; border: none !important; background: transparent !important;}
             .meta-card { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; border-bottom: 1px solid #e2e8f0 !important; padding-bottom: 15px !important; }
@@ -468,32 +525,47 @@
 
     <div id="checklist-wrapper">
         
+        <!-- SECTION 1 -->
         <div class="category-block">
-            <div class="section-title">1. General Structural Elements</div>
+            <div class="section-header-container">
+                <div class="section-title">1. General Structural Elements</div>
+            </div>
             <div class="item-list" id="sec-1-body"></div>
             <button class="btn-action btn-add" onclick="createUnifiedRow('sec-1-body', '', false)">➕ Add Custom Element</button>
         </div>
 
+        <!-- SECTION 2 -->
         <div class="category-block">
-            <div class="section-title">2. Rooms & Interior Finishings</div>
+            <div class="section-header-container">
+                <div class="section-title">2. Rooms & Interior Finishings</div>
+            </div>
             <div class="item-list" id="sec-2-body"></div>
             <button class="btn-action btn-add" onclick="createUnifiedRow('sec-2-body', '', false)">➕ Add Custom Element</button>
         </div>
 
+        <!-- SECTION 3 -->
         <div class="category-block">
-           <div class="section-title">3. Plumbing & Sanitary Installation</div>
-           <div class="item-list" id="sec-3-body"></div> 
-           <button class="btn-action btn-add" onclick="createUnifiedRow('sec-3-body', '', false)">➕ Add Custom Element</button>
+            <div class="section-header-container">
+                <div class="section-title">3. Plumbing & Sanitary Installation</div>
+            </div>
+            <div class="item-list" id="sec-3-body"></div> 
+            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-3-body', '', false)">➕ Add Custom Element</button>
         </div>
 
+        <!-- SECTION 4 -->
         <div class="category-block">
-            <div class="section-title">4. Electrical & HVAC Systems</div>
+            <div class="section-header-container">
+                <div class="section-title">4. Electrical & HVAC Systems</div>
+            </div>
             <div class="item-list" id="sec-4-body"></div> 
             <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
         </div>
 
+        <!-- SECTION 5 -->
         <div class="category-block">
-            <div class="section-title">5. External Landscaping & Boundaries</div>
+            <div class="section-header-container">
+                <div class="section-title">5. External Landscaping & Boundaries</div>
+            </div>
             <div class="item-list" id="sec-5-body"></div> 
             <button class="btn-action btn-add" onclick="createUnifiedRow('sec-5-body', '', false)">➕ Add Custom Element</button>
         </div>
@@ -539,17 +611,42 @@
         sectionIdCounter++;
         const wrapper = document.getElementById('checklist-wrapper');
         const customSecBodyId = `custom-sec-${sectionIdCounter}-body`;
+        const categoryDivId = `custom-cat-block-${sectionIdCounter}`;
 
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'category-block';
+        categoryDiv.id = categoryDivId;
         categoryDiv.innerHTML = `
-            <div class="section-title">${categoryName.trim()}</div>
+            <div class="section-header-container">
+                <div class="section-title">${categoryName.trim()}</div>
+                <button class="btn-delete-category" onclick="deleteCategoryBlock('${categoryDivId}', '${customSecBodyId}')" title="Delete Category Section">✕</button>
+            </div>
             <div class="item-list" id="${customSecBodyId}"></div>
             <button class="btn-action btn-add" onclick="createUnifiedRow('${customSecBodyId}', '', false)">➕ Add Custom Element</button>
         `;
 
         wrapper.appendChild(categoryDiv);
         createUnifiedRow(customSecBodyId, '', false);
+    }
+
+    function deleteCategoryBlock(categoryDivId, bodyContainerId) {
+        if (!confirm("Are you sure you want to delete this whole category and all its entries?")) return;
+        
+        const bodyContainer = document.getElementById(bodyContainerId);
+        if (bodyContainer) {
+            const children = bodyContainer.querySelectorAll('.checklist-item');
+            children.forEach(child => {
+                if (uploadedImages[child.id]) {
+                    delete uploadedImages[child.id];
+                }
+            });
+        }
+        
+        const targetBlock = document.getElementById(categoryDivId);
+        if (targetBlock) {
+            targetBlock.remove();
+        }
+        updateGallery();
     }
 
     function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
@@ -565,19 +662,28 @@
         
         let headerContentHTML = '';
         if(isFixed) {
-            headerContentHTML = `<div class="task-text-block">${fixedTaskText}</div>`;
+            headerContentHTML = `
+                <div class="task-row-container">
+                    <div class="task-input-container">
+                        <div class="task-text-block">${fixedTaskText}</div>
+                    </div>
+                </div>
+            `;
         } else {
             headerContentHTML = `
-                <textarea class="task-editable-input" 
-                          placeholder="Describe element name or task criteria..." 
-                          oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
+                <div class="task-row-container">
+                    <div class="task-input-container">
+                        <textarea class="task-editable-input" 
+                                  placeholder="Describe element name or task criteria..." 
+                                  oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
+                    </div>
+                    <button class="btn-delete-item" onclick="deleteCustomItem('${rowId}')" title="Delete Element">✕</button>
+                </div>
             `;
         }
 
         card.innerHTML = `
-            <div class="task-input-container">
-                ${headerContentHTML}
-            </div>
+            ${headerContentHTML}
             
             <div class="pdf-status-tag" id="pdf-tag-${rowId}">Not Started</div>
 
@@ -601,6 +707,17 @@
         if(!isFixed) {
             const txt = card.querySelector('.task-editable-input');
             setTimeout(() => autoExpandTextarea(txt), 50);
+        }
+    }
+
+    function deleteCustomItem(rowId) {
+        const item = document.getElementById(rowId);
+        if (item) {
+            item.remove();
+            if (uploadedImages[rowId]) {
+                delete uploadedImages[rowId];
+            }
+            updateGallery();
         }
     }
 
@@ -634,14 +751,17 @@
 
     function setStatus(rowId, statusValue) {
         const card = document.getElementById(rowId);
+        if(!card) return;
         card.classList.remove('status-ns', 'status-ip', 'status-cp');
         card.classList.add('status-' + statusValue);
         card.setAttribute('data-status-state', statusValue);
         
         const pdfTag = document.getElementById('pdf-tag-' + rowId);
-        if(statusValue === 'ns') pdfTag.innerText = "Not Started";
-        if(statusValue === 'ip') pdfTag.innerText = "Under Construction";
-        if(statusValue === 'cp') pdfTag.innerText = "Completed";
+        if(pdfTag) {
+            if(statusValue === 'ns') pdfTag.innerText = "Not Started";
+            if(statusValue === 'ip') pdfTag.innerText = "Under Construction";
+            if(statusValue === 'cp') pdfTag.innerText = "Completed";
+        }
 
         const buttons = card.querySelectorAll('.status-btn');
         buttons.forEach(btn => {
