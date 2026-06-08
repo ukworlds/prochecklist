@@ -3,940 +3,637 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional House Inspection Report</title>
+    <title>Enterprise Field Inspection Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            slate: '#0f172a',
+                            teal: '#0f766e',
+                            accent: '#3b82f6',
+                            danger: '#ef4444',
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            ns: '#64748b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
-        :root {
-            --primary-color: #1e293b; /* Deep Slate */
-            --secondary-color: #0f766e; /* Muted Teal Accent */
-            --accent-color: #2563eb; /* Royal Blue */
-            --danger-color: #ef4444; /* Soft Red for Delete */
-            --bg-color: #f8fafc;
-            --card-color: #ffffff;
-            --text-color: #334155;
-            --border-color: #e2e8f0;
-            
-            /* Status Colors */
-            --color-ns: #64748b; /* Not Started */
-            --color-ip: #d97706; /* Under Construction */
-            --color-cp: #16a34a; /* Completed */
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 16px;
-            line-height: 1.4;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-        }
-
-        header {
-            background: linear-gradient(135deg, var(--primary-color), #0f172a);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        header h1 { 
-            margin: 0; 
-            font-size: 22px; 
-            font-weight: 700; 
-            letter-spacing: -0.5px;
-        }
+        /* Strict View Panel Routing */
+        .view-panel { display: none !important; }
+        .view-panel.active { display: block !important; }
         
-        header p { 
-            margin: 4px 0 0 0; 
-            font-size: 13px; 
-            opacity: 0.8; 
-        }
-
-        /* Controls Layout Bar at Bottom */
-        .controls-row-bottom {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 24px 0 10px 0;
-        }
-
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            border: none;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            padding: 10px 16px;
-            width: 100%;
-            user-select: none;
-        }
-
-        .btn-action:active { transform: scale(0.98); opacity: 0.9; }
+        /* Independent Modal Visibility Guard */
+        .modal-hidden { display: none !important; }
+        .modal-visible { display: flex !important; }
         
-        .btn-print { 
-            background-color: var(--secondary-color); 
-            font-size: 15px;
-            box-shadow: 0 4px 6px rgba(15, 118, 110, 0.2);
-        }
-
-        /* Toggle Button Container Styling */
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--card-color);
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .toggle-label-text {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        /* Switch UI */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 46px;
-            height: 24px;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #cbd5e1;
-            transition: .3s;
-            border-radius: 24px;
-        }
-        .slider::before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--secondary-color); }
-        input:checked + .slider::before { transform: translateX(22px); }
-
-        .btn-category {
-            background-color: var(--primary-color);
-            box-shadow: 0 4px 6px rgba(30, 41, 59, 0.15);
-            margin: 10px 0 10px 0;
-        }
-        
-        .btn-add { 
-            background-color: transparent; 
-            color: var(--secondary-color);
-            border: 2px dashed var(--secondary-color);
-            margin: 8px 0 16px 0; 
-            padding: 8px 16px;
-            gap: 6px; 
-        }
-        .btn-add:hover { background: rgba(15, 118, 110, 0.05); }
-
-        /* Metadata Grid */
-        .meta-card {
-            background: var(--card-color);
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .meta-field { display: flex; flex-direction: column; gap: 4px; }
-        .meta-field label { font-weight: 600; font-size: 12px; color: #475569; }
-        .meta-field input { 
-            padding: 8px 12px; 
-            border: 1px solid var(--border-color); 
-            border-radius: 6px; 
-            font-size: 14px; 
-            background: #f8fafc; 
-            width: 100%; 
-            color: var(--primary-color);
-        }
-        .meta-field input:focus { border-color: var(--secondary-color); background: #fff; outline: none; }
-
-        .category-block {
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .section-header-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 20px 4px 8px 4px;
-            gap: 12px;
-        }
-
-        .section-title {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-        }
-        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
-
-        .btn-delete-category {
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #94a3b8;
-            border-radius: 6px;
-            width: 24px;
-            height: 24px;
-            font-size: 11px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .btn-delete-category:hover {
-            color: var(--danger-color);
-            border-color: var(--danger-color);
-            background: #fef2f2;
-        }
-
-        /* Checklist Dynamic Cards Layout */
-        .item-list { display: flex; flex-direction: column; gap: 10px; }
-        
-        .checklist-item {
-            background: var(--card-color);
-            border-radius: 10px;
-            padding: 12px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            border: 1px solid var(--border-color);
-            border-left: 5px solid var(--color-ns);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            position: relative;
-        }
-
-        .checklist-item.status-ns { border-left-color: var(--color-ns); }
-        .checklist-item.status-ip { border-left-color: var(--color-ip); }
-        .checklist-item.status-cp { border-left-color: var(--color-cp); }
-
-        .task-row-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .task-input-container { flex: 1; }
-        
-        .task-text-block {
-            width: 100%;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--primary-color);
-            line-height: 1.4;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .task-editable-input {
-            width: 100%;
-            padding: 4px 6px;
-            border: 1px dashed #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-            font-weight: 600;
-            background: #fff;
-            color: var(--primary-color);
-            display: block;
-            resize: none;
-            overflow: hidden;
-            line-height: 1.4;
-        }
-
-        .screen-status-badge {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 3px 8px;
-            border-radius: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .status-ns .screen-status-badge { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-        .status-ip .screen-status-badge { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-        .status-cp .screen-status-badge { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-
-        .btn-delete-item {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 4px 6px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .btn-delete-item:hover { color: var(--danger-color); background: #fef2f2; }
-
-        .item-controls-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .status-group {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            background: #f1f5f9;
-            padding: 3px;
-            border-radius: 8px;
-            flex: 1;
-        }
-
-        .status-btn {
-            background: transparent;
-            border: none;
-            padding: 6px 4px;
-            font-size: 11px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #64748b;
-            transition: all 0.15s ease;
-        }
-        .status-btn.active[data-status="ns"] { background: var(--color-ns); color: white; }
-        .status-btn.active[data-status="ip"] { background: var(--color-ip); color: white; }
-        .status-btn.active[data-status="cp"] { background: var(--color-cp); color: white; }
-
-        .file-wrapper { display: inline-flex; align-items: center; flex-shrink: 0; }
-        .file-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f1f5f9;
-            color: #475569;
-            width: 34px;
-            height: 34px;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid var(--border-color);
-        }
-        .file-label:hover { background-color: #e2e8f0; }
-        .file-label.has-file { background-color: #dcfce7; color: var(--secondary-color); border-color: #bbf7d0; }
-        .file-input { display: none; }
-
-        .remark-input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border-color);
-            background: #f8fafc;
-            border-radius: 6px;
-            font-size: 13px;
-            color: var(--text-color);
-        }
-        .remark-input:focus { border-color: #94a3b8; background: #fff; outline: none; }
-
-        /* Custom Modal Wizard */
-        .custom-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-            padding: 16px;
-        }
-        .custom-modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .custom-modal-card {
-            background: white;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 380px;
-            padding: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04);
-            transform: scale(0.95);
-            transition: transform 0.25s ease;
-            text-align: center;
-        }
-        .custom-modal-overlay.open .custom-modal-card { transform: scale(1); }
-        .custom-modal-title { font-size: 17px; font-weight: 700; color: var(--primary-color); margin: 0 0 6px 0; }
-        .custom-modal-desc { font-size: 13px; color: #64748b; margin: 0 0 20px 0; }
-        
-        /* Options Grid for Add Category */
-        .category-options-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .btn-option-choice {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            color: var(--primary-color);
-            padding: 8px 12px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-option-choice:hover {
-            background: var(--secondary-color);
-            color: white;
-            border-color: var(--secondary-color);
-        }
-
-        .modal-btn {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background 0.2s;
-            background: white;
-            color: var(--text-color);
-        }
-        .modal-btn-camera { background: var(--accent-color); color: white; border: none; }
-        .modal-btn-file { background: #f1f5f9; color: var(--primary-color); border: 1px solid #cbd5e1; }
-        .modal-btn-cancel { background: transparent; border: none; color: #94a3b8; margin-bottom: 0; margin-top: 6px; font-weight: 500; font-size: 13px; }
-
-        /* Photo Appendix Styling */
-        .gallery-section {
-            margin-top: 30px;
-            background: var(--card-color);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-        }
-        .gallery-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 12px; }
-        .gallery-item { border: 1px solid var(--border-color); padding: 10px; background: #fff; border-radius: 8px; }
-        .gallery-img { width: 100%; height: auto; max-height: 200px; object-fit: contain; background-color: #f8fafc; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--border-color); }
-        .gallery-title { font-weight: 700; font-size: 13px; color: var(--primary-color); margin-bottom: 4px; }
-        .gallery-status-badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; color: white; margin-bottom: 6px; text-transform: uppercase; }
-        .gallery-remark { font-size: 12px; color: #475569; background: #f8fafc; padding: 6px; border-radius: 4px; border-left: 3px solid #cbd5e1; }
-
-        /* Footer Attribution Panel */
-        .report-footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px dashed var(--border-color);
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-        }
-        .report-footer strong {
-            color: var(--primary-color);
-        }
-
-        @media (min-width: 600px) {
-            body { padding: 24px; }
-            .controls-row-bottom { flex-direction: row; align-items: center; }
-            .meta-card { grid-template-columns: repeat(2, 1fr); }
-            .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* PRINT LOGIC DESIGNS */
+        /* Print Stylesheet Overrides */
         @media print {
-            @page { size: A4 portrait; margin: 8mm 10mm; }
-            body { background-color: #fff; padding: 0; font-size: 11px; color: #000; }
-            .container { max-width: 100%; width: 100%; margin: 0; }
-            
-            header { 
-                background: transparent !important; color: #000 !important; padding: 0 0 6px 0 !important; 
-                border-bottom: 2px solid #0f172a !important; border-radius: 0 !important; box-shadow: none !important; margin-bottom: 12px !important;
-            }
-            header h1 { font-size: 18px; color: #0f172a !important; }
-            header p { color: #475569 !important; font-size: 11px; margin-top: 2px; }
-            
-            .controls-row-bottom, .btn-add, .btn-category, .file-wrapper, .status-group, .custom-modal-overlay, .btn-delete-item, .btn-delete-category { 
-                display: none !important; height: 0 !important; padding: 0 !important; margin: 0 !important; border: none !important; 
-            }
-            
-            .meta-card { 
-                box-shadow: none !important; padding: 0 0 6px 0 !important; margin-bottom: 10px !important; border: none !important; 
-                background: transparent !important; grid-template-columns: repeat(2, 1fr) !important; gap: 6px 16px !important; border-bottom: 1px dashed #cbd5e1 !important; 
-            }
-            .meta-field input { background: transparent !important; border: none !important; border-bottom: 1px solid #e2e8f0 !important; padding: 2px 0 !important; border-radius: 0; font-size: 11px; }
-            
-            .category-block { margin-bottom: 8px !important; page-break-inside: auto !important; break-inside: auto !important; }
-            .item-list { gap: 4px !important; }
-
-            .checklist-item { 
-                border: none !important; border-bottom: 1px solid #e2e8f0 !important; padding: 4px 0 !important; 
-                margin-bottom: 0 !important; border-radius: 0 !important; page-break-inside: avoid !important;
-                break-inside: avoid-page !important; gap: 2px !important; background: transparent !important; box-shadow: none !important;
-            }
-            
-            /* DYNAMIC FILTER HIDING */
-            body.filter-empty-print .checklist-item.print-hidden-empty {
-                display: none !important;
-            }
-            body.filter-empty-print .category-block.section-hidden-empty {
-                display: none !important;
-            }
-
-            .task-text-block { font-weight: 700; color: #0f172a !important; font-size: 12px !important; }
-            .task-editable-input { border: none !important; padding: 0 !important; font-weight: 700; background: transparent !important; color: #0f172a !important; font-size: 12px !important; height: auto !important; min-height: 0 !important; }
-            
-            .remark-input { border: none !important; background: transparent !important; padding: 0 !important; color: #475569 !important; font-size: 11px !important; margin-top: 1px !important; }
-            .remark-input::placeholder { color: transparent !important; }
-
-            .section-header-container { margin: 10px 0 4px 0 !important; padding: 0 !important; }
-            .section-title { font-size: 11px !important; color: #0f172a !important; font-weight: 800; }
-            .section-title::after { background: #cbd5e1 !important; height: 1px; }
-
-            .screen-status-badge { 
-                display: inline-block !important; font-size: 9px !important; padding: 1px 5px !important; border-radius: 4px !important;
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-            }
-
-            .gallery-section { page-break-before: auto !important; break-before: auto !important; margin-top: 14px !important; padding: 8px 0 0 0 !important; border: none !important; border-top: 2px solid #0f172a !important; }
-            .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-            .gallery-item { page-break-inside: avoid !important; break-inside: avoid-page !important; padding: 6px !important; }
-            .gallery-img { max-height: 120px !important; }
-            .gallery-remark { font-size: 10px !important; padding: 4px !important; }
-
-            .report-footer { margin-top: 30px !important; padding-top: 12px !important; border-top: 1px dashed #cbd5e1 !important; font-size: 10px !important; }
+            .view-panel:not(.active) { display: none !important; }
+            .no-print { display: none !important; }
+            body { background: #fff; color: #000; padding: 0; }
+            .print-border-b { border-bottom: 1px solid #cbd5e1 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; }
+            body.filter-empty-print .print-hidden-empty { display: none !important; }
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
 
-<div class="container">
-    <header>
-        <h1>Project Report</h1>
-        <p>Field Inspection & Progress Reports</p>
-    </header>
+<div class="max-w-4xl mx-auto px-4 py-8">
 
-    <div class="meta-card">
-        <div class="meta-field"><label>Project Name</label><input type="text" placeholder="e.g., Plot 42 Villa"></div>
-        <div class="meta-field"><label>Lead Inspector</label><input type="text" placeholder="Your Name"></div>
-        <div class="meta-field"><label>Site Location / Unit</label><input type="text" placeholder="Address"></div>
-        <div class="meta-field"><label>Assessment Date</label><input type="date"></div>
-    </div>
-
-    <div id="checklist-wrapper">
-        <!-- STANDARD ROOM CATEGORIES START -->
-        <div class="category-block" id="sec-1-block">
-            <div class="section-header-container"><div class="section-title">1. Hall</div></div>
-            <div class="item-list" id="sec-1-body"></div>
-            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-1-body', '', false)">➕ Add Custom Element</button>
-        </div>
-
-        <div class="category-block" id="sec-2-block">
-            <div class="section-header-container"><div class="section-title">2. Bedroom</div></div>
-            <div class="item-list" id="sec-2-body"></div>
-            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-2-body', '', false)">➕ Add Custom Element</button>
-        </div>
-
-        <div class="category-block" id="sec-3-block">
-            <div class="section-header-container"><div class="section-title">3. Kitchen</div></div>
-            <div class="item-list" id="sec-3-body"></div> 
-            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-3-body', '', false)">➕ Add Custom Element</button>
-        </div>
-
-        <div class="category-block" id="sec-4-block">
-            <div class="section-header-container"><div class="section-title">4. Toilet</div></div>
-            <div class="item-list" id="sec-4-body"></div> 
-            <button class="btn-action btn-add" onclick="createUnifiedRow('sec-4-body', '', false)">➕ Add Custom Element</button>
+    <div id="view-auth" class="view-panel active">
+        <div class="max-w-md mx-auto mt-20 bg-white rounded-2xl shadow-xl border border-slate-100 p-8 transform transition duration-300">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900 text-white text-2xl font-bold mb-4 shadow-lg shadow-slate-900/20">🏗️</div>
+                <h2 class="text-2xl font-bold text-slate-900">Field Hub Sign-In</h2>
+                <p class="text-sm text-slate-500 mt-1">Enter your secure workspace credentials</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Email Address</label>
+                    <input type="email" id="auth-email" placeholder="engineer1@site.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition text-sm">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition text-sm">
+                </div>
+                <button class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 active:scale-[0.99] mt-2" onclick="handleLogin()">Sign In to Dashboard</button>
+                <p id="auth-error" class="text-xs font-medium text-brand-danger bg-red-50 p-3 rounded-lg border border-red-100 hidden mt-2 text-center"></p>
+            </div>
         </div>
     </div>
 
-    <button class="btn-action btn-category" onclick="openCategorySelectorModal()">📁 Add Custom Category Section</button>
-
-    <div class="gallery-section">
-        <h2 style="color: var(--primary-color); margin: 0 0 4px 0; font-size: 14px; font-weight: 700;">Appendix: Photographic Evidence Log</h2>
-        <p id="no-photo-msg" style="color: #64748b; font-style: italic; font-size: 12px; margin: 0;">No photographs attached to report yet.</p>
-        <div class="gallery-grid" id="gallery-grid"></div>
-    </div>
-
-    <!-- Toolbar Controls At Bottom -->
-    <div class="controls-row-bottom">
-        <div class="toggle-container" style="flex: 1;">
-            <span class="toggle-label-text">📋 Print Filled Entries Only</span>
-            <label class="switch">
-                <input type="checkbox" id="print-filter-toggle">
-                <span class="slider"></span>
-            </label>
+    <div id="view-engineer-dash" class="view-panel">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+            <div>
+                <h2 id="eng-welcome" class="text-lg font-bold text-slate-900">Loading Workspace...</h2>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 mt-1">⚙️ Site Operations</span>
+            </div>
+            <button class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition active:scale-[0.98]" onclick="handleSignOut()">Logout</button>
         </div>
-        <button class="btn-action btn-print" style="flex: 1;" onclick="triggerSmartPrint()">🖨️ Print / Save PDF Report</button>
-    </div>
-
-    <!-- Dynamic Identity Attribution Footer -->
-    <footer class="report-footer">
-        Reviewed By: <strong>Ujjwal A. Khaire</strong> | <strong>Anand Associates</strong>
-    </footer>
-</div>
-
-<!-- Camera/File Picker Modal Overlay -->
-<div class="custom-modal-overlay" id="photo-wizard-modal" onclick="closePhotoWizard()">
-    <div class="custom-modal-card" onclick="event.stopPropagation()">
-        <div class="custom-modal-title">Add Photographic Evidence</div>
-        <div class="custom-modal-desc">Please choose your preferred capture method:</div>
-        <button class="modal-btn modal-btn-camera" onclick="executeModalAction('camera')">📸 Take Live Photo</button>
-        <button class="modal-btn modal-btn-file" onclick="executeModalAction('file')">📁 Upload From Files</button>
-        <button class="modal-btn modal-btn-cancel" onclick="closePhotoWizard()">Cancel</button>
-    </div>
-</div>
-
-<!-- Category Options Wizard Selection Modal -->
-<div class="custom-modal-overlay" id="category-selector-modal" onclick="closeCategorySelectorModal()">
-    <div class="custom-modal-card" onclick="event.stopPropagation()">
-        <div class="custom-modal-title">Select New Category</div>
-        <div class="custom-modal-desc">Pick a standard room layout template or enter a completely custom name:</div>
         
-        <div class="category-options-grid">
-            <button class="btn-option-choice" onclick="handleCategorySelection('Hall')">🛋️ Hall</button>
-            <button class="btn-option-choice" onclick="handleCategorySelection('Bedroom')">🛏️ Bedroom</button>
-            <button class="btn-option-choice" onclick="handleCategorySelection('Kitchen')">🍳 Kitchen</button>
-            <button class="btn-option-choice" onclick="handleCategorySelection('Toilet')">🚿 Toilet</button>
-            <button class="btn-option-choice" onclick="handleCategorySelection('W.C.')">🚽 W.C.</button>
-            <button class="btn-option-choice" onclick="handleCategorySelection('Combined Toilet')">🧼 Combined Toilet</button>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-base font-bold text-slate-900 uppercase tracking-wide">Your Active Logs</h3>
+            <button class="bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 px-5 rounded-xl text-sm shadow-md shadow-slate-900/10 transition active:scale-[0.98]" onclick="startNewInspection()">📝 New Log Sheet</button>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="p-4">Date</th>
+                        <th class="p-4">Project Name</th>
+                        <th class="p-4">Location</th>
+                        <th class="p-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="engineer-log-rows" class="text-sm divide-y divide-slate-100 text-slate-600"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="view-supervisor-dash" class="view-panel">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">Master Control Hub</h2>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100 mt-1">👑 System Supervisor</span>
+            </div>
+            <button class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition active:scale-[0.98]" onclick="handleSignOut()">Logout</button>
+        </div>
+        
+        <h3 class="text-base font-bold text-slate-900 uppercase tracking-wide mb-4">All Team Deployments</h3>
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="p-4">Date</th>
+                        <th class="p-4">Project</th>
+                        <th class="p-4">Engineer</th>
+                        <th class="p-4">Location</th>
+                        <th class="p-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="supervisor-log-rows" class="text-sm divide-y divide-slate-100 text-slate-600"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="view-inspection-form" class="view-panel">
+        <div class="mb-4 no-print">
+            <button class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm font-semibold transition" onclick="returnToDashboard()">&larr; Back to Dashboard</button>
+        </div>
+        
+        <header class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-6 rounded-2xl shadow-lg mb-6">
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight">Field Inspection & Progress Log</h1>
+            <p class="text-xs text-slate-400 mt-1 font-medium uppercase tracking-wider">Official Project Quality Assessment Framework</p>
+        </header>
+
+        <div class="no-print flex items-center justify-between px-4 py-3 bg-white border border-slate-100 rounded-xl shadow-sm mb-6 text-xs font-medium">
+            <div class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span id="sync-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span id="sync-dot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span id="sync-text" class="text-slate-600">All changes locked to cloud database</span>
+            </div>
+            <div id="supervisor-read-only-banner" class="font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 hidden">👁️ READ-ONLY MODE</div>
         </div>
 
-        <button class="modal-btn modal-btn-file" style="background: #f8fafc;" onclick="handleCategorySelection('custom')">✍️ Type Custom Name...</button>
-        <button class="modal-btn modal-btn-cancel" onclick="closeCategorySelectorModal()">Cancel</button>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 print-border-b">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Project Name</label>
+                <input type="text" id="meta-project" placeholder="e.g., Block A Structure" class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white" oninput="queueCloudSave()">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Lead Inspector</label>
+                <input type="text" id="meta-inspector" placeholder="Inspector Name" class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white" oninput="queueCloudSave()">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Site Location / Unit</label>
+                <input type="text" id="meta-location" placeholder="Site Coordinates or Unit #" class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white" oninput="queueCloudSave()">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Assessment Date</label>
+                <input type="date" id="meta-date" class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white" onchange="queueCloudSave()">
+            </div>
+        </div>
+
+        <div id="checklist-wrapper" class="space-y-6"></div>
+
+        <button id="add-category-btn" class="no-print w-full mt-6 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 transition text-sm flex items-center justify-center gap-2" onclick="openCategorySelectorModal()">📁 Add Custom Category Section</button>
+
+        <div class="mt-8 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm print-border-b">
+            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-1">Appendix: Photographic Evidence Log</h2>
+            <p id="no-photo-msg" class="text-xs text-slate-400 italic">No photographs attached to report yet.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4" id="gallery-grid"></div>
+        </div>
+
+        <div class="no-print flex flex-col sm:flex-row gap-4 mt-6">
+            <div class="flex-1 flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-slate-100 shadow-sm">
+                <span class="text-xs font-bold text-slate-600">Print Filled Content Entries Only</span>
+                <input type="checkbox" id="print-filter-toggle" class="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900">
+            </div>
+            <button class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition shadow-md shadow-slate-900/10 text-sm active:scale-[0.98]" onclick="triggerSmartPrint()">🖨️ Print / Save PDF</button>
+        </div>
+        
+        <footer class="mt-12 text-center text-xs text-slate-400 border-t border-dashed border-slate-200 pt-6">
+            Review Verified By: <strong class="text-slate-600">Ujjwal A. Khaire</strong> | Code: <strong class="text-slate-600">ENG-MH-2026</strong>
+        </footer>
+    </div>
+
+</div>
+
+<div class="modal-hidden no-print fixed inset-0 bg-slate-900/40 backdrop-blur-sm items-center justify-center p-4 z-50" id="photo-wizard-modal" onclick="closePhotoWizard()">
+    <div class="bg-white rounded-2xl w-full max-w-xs p-6 shadow-xl transform transition-all" onclick="event.stopPropagation()">
+        <div class="text-sm font-bold text-slate-900 text-center mb-4">Add Photographic Evidence</div>
+        <div class="space-y-2">
+            <button class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow transition" onclick="executeModalAction('camera')">📸 Take Live Photo</button>
+            <button class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition" onclick="executeModalAction('file')">📁 Upload From Files</button>
+            <button class="w-full py-2.5 px-4 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition" onclick="closePhotoWizard()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-hidden no-print fixed inset-0 bg-slate-900/40 backdrop-blur-sm items-center justify-center p-4 z-50" id="category-selector-modal" onclick="closeCategorySelectorModal()">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-xl" onclick="event.stopPropagation()">
+        <div class="text-sm font-bold text-slate-900 text-center mb-4">Select Structural Segment Block</div>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+            <button class="bg-slate-50 hover:bg-slate-100 border border-slate-200 py-2 px-3 text-xs font-semibold rounded-xl transition text-slate-700" onclick="handleCategorySelection('Hall')">🛋️ Hall</button>
+            <button class="bg-slate-50 hover:bg-slate-100 border border-slate-200 py-2 px-3 text-xs font-semibold rounded-xl transition text-slate-700" onclick="handleCategorySelection('Bedroom')">🛏️ Bedroom</button>
+            <button class="bg-slate-50 hover:bg-slate-100 border border-slate-200 py-2 px-3 text-xs font-semibold rounded-xl transition text-slate-700" onclick="handleCategorySelection('Kitchen')">🍳 Kitchen</button>
+            <button class="bg-slate-50 hover:bg-slate-100 border border-slate-200 py-2 px-3 text-xs font-semibold rounded-xl transition text-slate-700" onclick="handleCategorySelection('Toilet')">🚿 Toilet</button>
+            <button class="bg-slate-50 hover:bg-slate-100 border border-slate-200 py-2 px-3 text-xs font-semibold rounded-xl transition text-slate-700" onclick="handleCategorySelection('W.C.')">🚽 W.C.</button>
+            <button class="bg-slate-50 hover:bg-slate-100 border border-slate-200 py-2 px-3 text-xs font-semibold rounded-xl transition text-slate-700" onclick="handleCategorySelection('Combined Toilet')">🧼 Combined Toilet</button>
+        </div>
+        <button class="w-full py-2.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl mb-2 transition" onclick="handleCategorySelection('custom')">✍️ Custom Structural Identifier...</button>
+        <button class="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition" onclick="closeCategorySelectorModal()">Cancel Selection</button>
     </div>
 </div>
 
 <script>
-    const uploadedImages = {};
-    let rowIdCounter = 5000;
-    let sectionIdCounter = 4; // Starts at 4 since we have 4 default sections
-    let activeModalRowId = null;
+    // ===================================================
+    // CONFIGURATION BLOCK: PASTE FIREBASE SYSTEM KEYS HERE
+    // ===================================================
+    const firebaseConfig = {
+  apiKey: "AIzaSyAlwIU80GXxPXrscFHo7UwY36vq_E-rHBg",
+  authDomain: "inspection-portal-4ca54.firebaseapp.com",
+  projectId: "inspection-portal-4ca54",
+  storageBucket: "inspection-portal-4ca54.firebasestorage.app",
+  messagingSenderId: "151022661098",
+  appId: "1:151022661098:web:1bdaedc9de783a460a1693",
+  measurementId: "G-9KSXG1NSNZ"
+};
 
-    // MASTER TEMPLATE DICTIONARY: Maps categories to their respective baseline evaluation checks
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let currentUserProfile = null;
+    let currentReportId = "";
+    let cloudSaveTimeout = null;
+    let activeModalRowId = null;
+    let uploadedImages = {};
+    let cloudUnsubscribeListener = null;
+
     const masterQuestionTemplates = {
-        "Hall": [
-            "Flooring leveling, tile alignment, and joint grouting parameters",
-            "Main door framework fitment and lock mechanism smoothness"
-        ],
-        "Bedroom": [
-            "Window alignment, sash clearance, and weather-stripping seals",
-            "Wall plastering smoothness, putty finish, and paint symmetry"
-        ],
-        "Kitchen": [
-            "Concealed plumbing water pressure checks & sink outlet drainage flow",
-            "Kitchen counter slab leveling, granite edges, and dado tile height"
-        ],
-        "Toilet": [
-            "Sanitary fixtures installation flush efficiency and floor trap layout slope"
-        ],
-        "W.C.": [
-            "Sanitary fixtures installation flush efficiency and floor trap layout slope"
-        ],
-        "Combined Toilet": [
-            "Sanitary fixtures installation flush efficiency and floor trap layout slope",
-            "Concealed plumbing water pressure checks & sink outlet drainage flow"
-        ]
+        "Hall": ["Flooring leveling, tile alignment, and joint grouting parameters", "Main door framework fitment and lock mechanism smoothness"],
+        "Bedroom": ["Window alignment, sash clearance, and weather-stripping seals", "Wall plastering smoothness, putty finish, and paint symmetry"],
+        "Kitchen": ["Concealed plumbing water pressure checks & sink outlet drainage flow", "Kitchen counter slab leveling, granite edges, and dado tile height"],
+        "Toilet": ["Sanitary fixtures installation flush efficiency and floor trap layout slope"],
+        "W.C.": ["Sanitary fixtures installation flush efficiency and floor trap layout slope"],
+        "Combined Toilet": ["Sanitary fixtures installation flush efficiency and floor trap layout slope", "Concealed plumbing water pressure checks & sink outlet drainage flow"]
     };
 
-    function triggerSmartPrint() {
-        const toggleFilterActive = document.getElementById('print-filter-toggle').checked;
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            determineUserRouting(user);
+        } else {
+            if(cloudUnsubscribeListener) cloudUnsubscribeListener();
+            switchView('view-auth');
+        }
+    });
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+    }
+
+    function handleLogin() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-password').value;
+        const errEl = document.getElementById('auth-error');
+        errEl.classList.add('hidden');
+
+        if(!email || !pass) { errEl.innerText="All authorization fields required."; errEl.classList.remove('hidden'); return; }
+
+        auth.signInWithEmailAndPassword(email, pass).catch(err => {
+            errEl.innerText = err.message;
+            errEl.classList.remove('hidden');
+        });
+    }
+
+    function handleSignOut() { auth.signOut(); }
+
+    function determineUserRouting(user) {
+        if (user.email.toLowerCase().includes('supervisor')) {
+            currentUserProfile = { uid: user.uid, email: user.email, role: 'supervisor' };
+            loadSupervisorDashboard();
+        } else {
+            currentUserProfile = { uid: user.uid, email: user.email, role: 'engineer' };
+            loadEngineerDashboard(user.uid);
+        }
+    }
+
+    function loadEngineerDashboard(uid) {
+        switchView('view-engineer-dash');
+        document.getElementById('eng-welcome').innerText = `Workspace: ${currentUserProfile.email}`;
         
-        if (toggleFilterActive) {
-            document.body.classList.add('filter-empty-print');
+        db.collection('reports').where('engineerId', '==', uid).onSnapshot(snapshot => {
+            const tbody = document.getElementById('engineer-log-rows');
+            tbody.innerHTML = '';
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">No records logged. Click 'New Log Sheet' to start.</td></tr>`;
+                return;
+            }
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition text-slate-700 font-medium";
+                tr.innerHTML = `
+                    <td class="p-4 text-slate-500 text-xs">${data.date || 'N/A'}</td>
+                    <td class="p-4 font-semibold text-slate-900">${data.projectName || 'Untitled Sheet'}</td>
+                    <td class="p-4 text-xs">${data.location || 'N/A'}</td>
+                    <td class="p-4 text-right"><button class="text-blue-600 hover:text-blue-800 font-bold text-xs" onclick="openInspectionSheet('${doc.id}')">Edit Framework &rarr;</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    function loadSupervisorDashboard() {
+        switchView('view-supervisor-dash');
+        db.collection('reports').orderBy('date', 'desc').onSnapshot(snapshot => {
+            const tbody = document.getElementById('supervisor-log-rows');
+            tbody.innerHTML = '';
+            if(snapshot.empty) { tbody.innerHTML=`<tr><td colspan="5" class="p-8 text-center text-slate-400">No active transmissions detected.</td></tr>`; return; }
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition text-slate-700 font-medium";
+                tr.innerHTML = `
+                    <td class="p-4 text-slate-500 text-xs">${data.date || 'N/A'}</td>
+                    <td class="p-4 font-semibold text-slate-900">${data.projectName || 'Untitled'}</td>
+                    <td class="p-4 text-xs text-purple-600">${data.inspectorEmail || 'Staff'}</td>
+                    <td class="p-4 text-xs">${data.location || 'N/A'}</td>
+                    <td class="p-4 text-right"><button class="text-purple-600 hover:text-purple-800 font-bold text-xs" onclick="openInspectionSheet('${doc.id}')">Audit System &rarr;</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    function startNewInspection() {
+        const newDocRef = db.collection('reports').doc();
+        const basePayload = {
+            engineerId: currentUserProfile.uid,
+            inspectorEmail: currentUserProfile.email,
+            projectName: '',
+            inspector: '',
+            location: '',
+            date: new Date().toISOString().split('T')[0],
+            sections: [],
+            photoLog: {}
+        };
+        newDocRef.set(basePayload).then(() => openInspectionSheet(newDocRef.id));
+    }
+
+    function openInspectionSheet(reportId) {
+        currentReportId = reportId;
+        switchView('view-inspection-form');
+        setSyncUIState('loading');
+
+        if(cloudUnsubscribeListener) cloudUnsubscribeListener();
+
+        cloudUnsubscribeListener = db.collection('reports').doc(reportId).onSnapshot(doc => {
+            if (!doc.exists) return;
+            const data = doc.data();
             
-            const checklistItems = document.querySelectorAll('.checklist-item');
-            checklistItems.forEach(item => {
-                const statusState = item.getAttribute('data-status-state');
-                const remarkInput = item.querySelector('.remark-input');
-                const remarkText = remarkInput ? remarkInput.value.trim() : "";
-                const hasUploadedPhoto = uploadedImages[item.id] ? true : false;
-
-                if (statusState === 'ns' && remarkText === "" && !hasUploadedPhoto) {
-                    item.classList.add('print-hidden-empty');
-                } else {
-                    item.classList.remove('print-hidden-empty');
-                }
-            });
-
-            const sections = document.querySelectorAll('.category-block');
-            sections.forEach(sec => {
-                const totalRows = sec.querySelectorAll('.checklist-item').length;
-                const hiddenRows = sec.querySelectorAll('.checklist-item.print-hidden-empty').length;
-
-                if (totalRows > 0 && totalRows === hiddenRows) {
-                    sec.classList.add('section-hidden-empty');
-                } else {
-                    sec.classList.remove('section-hidden-empty');
-                }
-            });
-        } else {
-            document.body.classList.remove('filter-empty-print');
-            document.querySelectorAll('.checklist-item').forEach(el => el.classList.remove('print-hidden-empty'));
-            document.querySelectorAll('.category-block').forEach(el => el.classList.remove('section-hidden-empty'));
-        }
-
-        window.print();
+            uploadedImages = data.photoLog || {};
+            
+            if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                renderUIFromPayload(data);
+            }
+            
+            updateGalleryView();
+            enforcePermissionsLayout();
+            setSyncUIState('synced');
+        });
     }
 
-    function openCategorySelectorModal() {
-        document.getElementById('category-selector-modal').classList.add('open');
-    }
-
-    function closeCategorySelectorModal() {
-        document.getElementById('category-selector-modal').classList.remove('open');
-    }
-
-    function handleCategorySelection(choice) {
-        closeCategorySelectorModal();
-        let categoryName = choice;
-        let isCustomInput = false;
+    function enforcePermissionsLayout() {
+        const isSupervisor = currentUserProfile.role === 'supervisor';
+        document.getElementById('supervisor-read-only-banner').style.display = isSupervisor ? 'block' : 'none';
+        document.getElementById('add-category-btn').style.display = isSupervisor ? 'none' : 'block';
         
-        if (choice === 'custom') {
-            categoryName = prompt("Enter the name for your custom category section:");
-            isCustomInput = true;
-        }
-        
-        if (!categoryName || categoryName.trim() === "") return;
+        document.querySelectorAll('#view-inspection-form input, #view-inspection-form textarea').forEach(el => {
+            el.disabled = isSupervisor;
+        });
+        document.querySelectorAll('.status-btn, .btn-add, .btn-delete-item, .btn-delete-category, .file-label').forEach(el => {
+            if(isSupervisor) el.style.pointerEvents = 'none';
+        });
+    }
 
-        categoryName = categoryName.trim();
-        sectionIdCounter++;
+    function renderUIFromPayload(data) {
+        document.getElementById('meta-project').value = data.projectName || '';
+        document.getElementById('meta-inspector').value = data.inspector || '';
+        document.getElementById('meta-location').value = data.location || '';
+        document.getElementById('meta-date').value = data.date || '';
+
         const wrapper = document.getElementById('checklist-wrapper');
-        const customSecBodyId = `custom-sec-${sectionIdCounter}-body`;
-        const categoryDivId = `custom-cat-block-${sectionIdCounter}`;
+        wrapper.innerHTML = '';
 
-        // Dynamic multi-room layout indexing
-        const numberedHeading = `${sectionIdCounter}. ${categoryName}`;
+        if (!data.sections || data.sections.length === 0) {
+            let index = 1;
+            ["Hall", "Bedroom", "Kitchen", "Toilet"].forEach(cat => {
+                appendCategoryBlockToDOM(`sec-${index}`, `${index}. ${cat}`, cat, masterQuestionTemplates[cat], true);
+                index++;
+            });
+            return;
+        }
 
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'category-block';
-        categoryDiv.id = categoryDivId;
-        categoryDiv.innerHTML = `
-            <div class="section-header-container">
-                <div class="section-title">${numberedHeading}</div>
-                <button class="btn-delete-category" onclick="deleteCategoryBlock('${categoryDivId}', '${customSecBodyId}')" title="Delete Category Section">✕</button>
+        data.sections.forEach((sec, sIdx) => {
+            const blockId = `sec-cloud-${sIdx}`;
+            appendCategoryBlockToDOM(blockId, sec.heading, sec.rawKey, [], sIdx < 4);
+            const bodyContainer = document.getElementById(`${blockId}-body`);
+
+            sec.items.forEach(item => {
+                const card = document.createElement('div');
+                card.id = item.id;
+                card.setAttribute('data-status-state', item.status);
+                card.className = `checklist-item bg-white p-4 rounded-xl border-l-4 shadow-sm flex flex-col gap-3 relative transition print-border-b ${getBorderColorByStatus(item.status)}`;
+
+                let headerHTML = item.isFixed ? 
+                    `<div class="flex justify-between items-start gap-4"><div class="text-sm font-semibold text-slate-800">${item.task}</div><div class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border" id="badge-${item.id}">${getStatusLabel(item.status)}</div></div>` :
+                    `<div class="flex justify-between items-start gap-4"><textarea class="w-full text-sm font-semibold text-slate-800 bg-transparent border-b border-dashed border-slate-200 focus:outline-none focus:border-slate-900 resize-none" oninput="queueCloudSave()">${item.task}</textarea><div class="flex items-center gap-2"><div class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border" id="badge-${item.id}">${getStatusLabel(item.status)}</div><button class="no-print text-slate-300 hover:text-red-500 text-xs transition" onclick="deleteItemRowDOM('${item.id}')">✕</button></div></div>`;
+
+                const fileLabel = uploadedImages[item.id] ? "✓ Captured" : "📸 Capture";
+                const fileClass = uploadedImages[item.id] ? "file-label inline-flex items-center justify-center px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 cursor-pointer" : "file-label inline-flex items-center justify-center px-3 py-1.5 bg-slate-50 text-slate-600 text-xs font-bold rounded-lg border border-slate-200 hover:bg-slate-100 transition cursor-pointer";
+
+                card.innerHTML = `
+                    ${headerHTML}
+                    <div class="no-print flex flex-wrap items-center gap-3 mt-1">
+                        <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg flex-1 min-w-[240px]">
+                            <button class="status-btn text-[11px] font-bold py-1 px-2 rounded-md transition ${item.status === 'ns' ? 'bg-slate-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}" onclick="setStatusLocal('${item.id}', 'ns')">Not Started</button>
+                            <button class="status-btn text-[11px] font-bold py-1 px-2 rounded-md transition ${item.status === 'ip' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}" onclick="setStatusLocal('${item.id}', 'ip')">In Progress</button>
+                            <button class="status-btn text-[11px] font-bold py-1 px-2 rounded-md transition ${item.status === 'cp' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}" onclick="setStatusLocal('${item.id}', 'cp')">Completed</button>
+                        </div>
+                        <div class="file-wrapper">
+                            <label class="${fileClass}" id="lbl-${item.id}" onclick="openPhotoWizard('${item.id}')">${fileLabel}</label>
+                            <input type="file" id="file-browse-${item.id}" class="hidden" accept="image/*" onchange="processAndCompressPhoto(this, '${item.id}')">
+                            <input type="file" id="file-camera-${item.id}" class="hidden" accept="image/*" capture="environment" onchange="processAndCompressPhoto(this, '${item.id}')">
+                        </div>
+                    </div>
+                    <input type="text" class="w-full text-xs px-3 py-2 rounded-lg bg-slate-50 border border-slate-100 focus:outline-none focus:bg-white focus:ring-1 focus:ring-slate-900" value="${item.remark || ''}" placeholder="Enter operational notes / progress metrics..." oninput="queueCloudSave()">
+                `;
+                bodyContainer.appendChild(card);
+                updateBadgeUIStyle(item.id, item.status);
+            });
+        });
+    }
+
+    function appendCategoryBlockToDOM(blockId, displayHeading, rawCategoryKey, questionArray, isFixedModel) {
+        const wrapper = document.getElementById('checklist-wrapper');
+        const block = document.createElement('div');
+        block.className = 'category-block bg-white/50 border border-slate-100 p-4 rounded-2xl shadow-sm print-border-b';
+        block.id = blockId + '-block';
+        
+        block.innerHTML = `
+            <div class="flex items-center justify-between mb-4 gap-4">
+                <div class="section-title text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-2 flex-1" data-raw-title="${rawCategoryKey}">${displayHeading}</div>
+                ${isFixedModel ? '' : `<button class="no-print border border-slate-200 text-slate-400 hover:text-red-500 rounded-lg w-6 h-6 flex items-center justify-center text-xs transition" onclick="deleteCategoryBlock('${block.id}')">✕</button>`}
             </div>
-            <div class="item-list" id="${customSecBodyId}"></div>
-            <button class="btn-action btn-add" onclick="createUnifiedRow('${customSecBodyId}', '', false)">➕ Add Custom Element</button>
+            <div class="space-y-3" id="${blockId}-body"></div>
+            <button class="no-print w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs mt-3 transition" onclick="createRowDOMElement('${blockId}-body', '', false, true)">➕ Add Custom Check-Item</button>
         `;
+        wrapper.appendChild(block);
 
-        wrapper.appendChild(categoryDiv);
-
-        // Fetch corresponding template checks if found, otherwise serve an open input row
-        const templateQuestions = masterQuestionTemplates[categoryName];
-        if (!isCustomInput && templateQuestions && templateQuestions.length > 0) {
-            templateQuestions.forEach(question => {
-                createUnifiedRow(customSecBodyId, question, true);
-            });
-        } else {
-            createUnifiedRow(customSecBodyId, '', false);
-        }
+        const bodyContainer = document.getElementById(`${blockId}-body`);
+        questionArray.forEach(qText => { createRowDOMElement(`${blockId}-body`, qText, true, false); });
     }
 
-    function deleteCategoryBlock(categoryDivId, bodyContainerId) {
-        if (!confirm("Are you sure you want to delete this whole category and all its entries?")) return;
-        
-        const bodyContainer = document.getElementById(bodyContainerId);
-        if (bodyContainer) {
-            const children = bodyContainer.querySelectorAll('.checklist-item');
-            children.forEach(child => {
-                if (uploadedImages[child.id]) delete uploadedImages[child.id];
-            });
-        }
-        const targetBlock = document.getElementById(categoryDivId);
-        if (targetBlock) targetBlock.remove();
-        updateGallery();
-    }
-
-    function createUnifiedRow(targetContainerId, fixedTaskText = "", isFixed = false) {
-        rowIdCounter++;
-        const container = document.getElementById(targetContainerId);
-        if (!container) return;
-        const rowId = "row-" + rowIdCounter;
-        
+    function createRowDOMElement(containerId, taskText = "", isFixed = false, triggerImmediateSave = false) {
+        const container = document.getElementById(containerId);
+        const rowId = "row-" + Math.random().toString(36).substring(2, 9);
         const card = document.createElement('div');
-        card.className = 'checklist-item status-ns';
         card.id = rowId;
         card.setAttribute('data-status-state', 'ns');
+        card.className = `checklist-item bg-white p-4 rounded-xl border-l-4 border-slate-400 shadow-sm flex flex-col gap-3 relative transition print-border-b`;
         
-        let headerContentHTML = '';
-        if(isFixed) {
-            headerContentHTML = `
-                <div class="task-row-container">
-                    <div class="task-input-container"><div class="task-text-block">${fixedTaskText}</div></div>
-                    <div class="screen-status-badge" id="badge-${rowId}">Not Started</div>
-                    <button class="btn-delete-item" onclick="deleteCustomItem('${rowId}')" title="Delete Element">✕</button>
-                </div>
-            `;
-        } else {
-            headerContentHTML = `
-                <div class="task-row-container">
-                    <div class="task-input-container">
-                        <textarea class="task-editable-input" placeholder="Describe element name or task criteria..." oninput="autoExpandTextarea(this); updateGallery()">${fixedTaskText}</textarea>
-                    </div>
-                    <div class="screen-status-badge" id="badge-${rowId}">Not Started</div>
-                    <button class="btn-delete-item" onclick="deleteCustomItem('${rowId}')" title="Delete Element">✕</button>
-                </div>
-            `;
-        }
+        let headerHTML = isFixed ? 
+            `<div class="flex justify-between items-start gap-4"><div class="text-sm font-semibold text-slate-800">${taskText}</div><div class="text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider px-2 py-0.5 rounded-md border border-slate-200" id="badge-${rowId}">Not Started</div></div>` :
+            `<div class="flex justify-between items-start gap-4"><textarea class="w-full text-sm font-semibold text-slate-800 bg-transparent border-b border-dashed border-slate-200 focus:outline-none focus:border-slate-900 resize-none" placeholder="Describe layout parameters..." oninput="queueCloudSave()">${taskText}</textarea><div class="flex items-center gap-2"><div class="text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider px-2 py-0.5 rounded-md border border-slate-200" id="badge-${rowId}">Not Started</div><button class="no-print text-slate-300 hover:text-red-500 text-xs transition" onclick="deleteItemRowDOM('${rowId}')">✕</button></div></div>`;
 
         card.innerHTML = `
-            ${headerContentHTML}
-            <div class="item-controls-row">
-                <div class="status-group">
-                    <button class="status-btn active" data-status="ns" onclick="setStatus('${rowId}', 'ns')">Not Started</button>
-                    <button class="status-btn" data-status="ip" onclick="setStatus('${rowId}', 'ip')">In Progress</button>
-                    <button class="status-btn" data-status="cp" onclick="setStatus('${rowId}', 'cp')">Completed</button>
+            ${headerHTML}
+            <div class="no-print flex flex-wrap items-center gap-3 mt-1">
+                <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg flex-1 min-w-[240px]">
+                    <button class="status-btn text-[11px] font-bold py-1 px-2 rounded-md bg-slate-500 text-white shadow-sm" onclick="setStatusLocal('${rowId}', 'ns')">Not Started</button>
+                    <button class="status-btn text-[11px] font-bold py-1 px-2 rounded-md text-slate-500 hover:text-slate-800" onclick="setStatusLocal('${rowId}', 'ip')">In Progress</button>
+                    <button class="status-btn text-[11px] font-bold py-1 px-2 rounded-md text-slate-500 hover:text-slate-800" onclick="setStatusLocal('${rowId}', 'cp')">Completed</button>
                 </div>
                 <div class="file-wrapper">
-                    <label class="file-label" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')" title="Capture Photo">📸</label>
-                    <input type="file" id="file-browse-${rowId}" class="file-input" accept="image/*" onchange="handleImageUpload(this, '${rowId}')">
-                    <input type="file" id="file-camera-${rowId}" class="file-input" accept="image/*" capture="environment" onchange="handleImageUpload(this, '${rowId}')">
+                    <label class="file-label inline-flex items-center justify-center px-3 py-1.5 bg-slate-50 text-slate-600 text-xs font-bold rounded-lg border border-slate-200 hover:bg-slate-100 transition cursor-pointer" id="lbl-${rowId}" onclick="openPhotoWizard('${rowId}')">📸 Capture</label>
+                    <input type="file" id="file-browse-${rowId}" class="hidden" accept="image/*" onchange="processAndCompressPhoto(this, '${rowId}')">
+                    <input type="file" id="file-camera-${rowId}" class="hidden" accept="image/*" capture="environment" onchange="processAndCompressPhoto(this, '${rowId}')">
                 </div>
             </div>
-            <input type="text" class="remark-input" placeholder="Enter notes, observations, or action items..." oninput="updateGallery()">
+            <input type="text" class="w-full text-xs px-3 py-2 rounded-lg bg-slate-50 border border-slate-100 focus:outline-none focus:bg-white focus:ring-1 focus:ring-slate-900" placeholder="Enter operational notes...">
         `;
         container.appendChild(card);
-        
-        if(!isFixed) {
-            const txt = card.querySelector('.task-editable-input');
-            setTimeout(() => autoExpandTextarea(txt), 50);
-        }
+        if (triggerImmediateSave) queueCloudSave();
+        return rowId;
     }
 
-    function deleteCustomItem(rowId) {
-        const item = document.getElementById(rowId);
-        if (item) {
-            item.remove();
-            if (uploadedImages[rowId]) delete uploadedImages[rowId];
-            updateGallery();
-        }
-    }
-
-    function autoExpandTextarea(textarea) {
-        if(!textarea) return;
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight) + 'px';
-    }
-
-    function openPhotoWizard(rowId) {
-        activeModalRowId = rowId;
-        document.getElementById('photo-wizard-modal').classList.add('open');
-    }
-
-    function closePhotoWizard() {
-        document.getElementById('photo-wizard-modal').classList.remove('open');
-        activeModalRowId = null;
-    }
-
-    function executeModalAction(mode) {
-        if (!activeModalRowId) return;
-        if (mode === 'camera') document.getElementById('file-camera-' + activeModalRowId).click();
-        else if (mode === 'file') document.getElementById('file-browse-' + activeModalRowId).click();
-        closePhotoWizard();
-    }
-
-    function setStatus(rowId, statusValue) {
-        const card = document.getElementById(rowId);
-        if(!card) return;
-        card.classList.remove('status-ns', 'status-ip', 'status-cp');
-        card.classList.add('status-' + statusValue);
-        card.setAttribute('data-status-state', statusValue);
-        
-        const badge = document.getElementById('badge-' + rowId);
-        if(badge) {
-            if(statusValue === 'ns') badge.innerText = "Not Started";
-            if(statusValue === 'ip') badge.innerText = "Under Construction";
-            if(statusValue === 'cp') badge.innerText = "Completed";
-        }
-
-        const buttons = card.querySelectorAll('.status-btn');
-        buttons.forEach(btn => {
-            if(btn.getAttribute('data-status') === statusValue) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-        updateGallery();
-    }
-
-    function handleImageUpload(input, rowId) {
+    function processAndCompressPhoto(input, rowId) {
         const file = input.files[0];
         const label = document.getElementById('lbl-' + rowId);
         if (!file) return;
+
+        setSyncUIState('saving');
+        label.innerText = "⏳ Uploading...";
 
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                let width = img.width; let height = img.height;
-                const max_size = 800;
-
-                if (width > height) {
-                    if (width > max_size) { height *= max_size / width; width = max_size; }
-                } else {
-                    if (height > max_size) { width *= max_size / height; height = max_size; }
+                let width = img.width;
+                let height = img.height;
+                const max_size = 480; 
+                
+                if (width > height ? width > max_size : height > max_size) {
+                    if (width > height) { height *= max_size / width; width = max_size; }
+                    else { width *= max_size / height; height = max_size; }
                 }
                 
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
+                canvas.width = width;
+                canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+                const base64String = canvas.toDataURL('image/jpeg', 0.6);
+                uploadedImages[rowId] = base64String;
                 
-                uploadedImages[rowId] = canvas.toDataURL('image/jpeg', 0.82);
-                label.innerText = "✓";
-                label.classList.add('has-file');
-                updateGallery();
+                label.innerText = "✓ Captured";
+                label.className = "file-label inline-flex items-center justify-center px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 cursor-pointer";
+                
+                saveDataToCloudNow();
             };
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
 
-    function updateGallery() {
+    function setStatusLocal(rowId, val) {
+        const card = document.getElementById(rowId);
+        if (!card) return;
+        
+        card.setAttribute('data-status-state', val);
+        card.className = `checklist-item bg-white p-4 rounded-xl border-l-4 shadow-sm flex flex-col gap-3 relative transition print-border-b ${getBorderColorByStatus(val)}`;
+        
+        const badge = document.getElementById(`badge-${rowId}`);
+        badge.innerText = getStatusLabel(val);
+        updateBadgeUIStyle(rowId, val);
+
+        const buttons = card.querySelectorAll('.status-btn');
+        buttons.forEach(btn => {
+            btn.className = "status-btn text-[11px] font-bold py-1 px-2 rounded-md transition text-slate-500 hover:text-slate-800";
+        });
+        if(val === 'ns') buttons[0].className = "status-btn text-[11px] font-bold py-1 px-2 rounded-md transition bg-slate-500 text-white shadow-sm";
+        if(val === 'ip') buttons[1].className = "status-btn text-[11px] font-bold py-1 px-2 rounded-md transition bg-amber-500 text-white shadow-sm";
+        if(val === 'cp') buttons[2].className = "status-btn text-[11px] font-bold py-1 px-2 rounded-md transition bg-emerald-500 text-white shadow-sm";
+
+        queueCloudSave();
+    }
+
+    function updateBadgeUIStyle(id, val) {
+        const badge = document.getElementById(`badge-${id}`);
+        if(!badge) return;
+        if(val === 'cp') badge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200";
+        else if(val === 'ip') badge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200";
+        else badge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-50 text-slate-500 border border-slate-200";
+    }
+
+    function getBorderColorByStatus(status) {
+        if(status === 'cp') return 'border-emerald-500';
+        if(status === 'ip') return 'border-amber-500';
+        return 'border-slate-400';
+    }
+
+    function queueCloudSave() {
+        setSyncUIState('saving');
+        clearTimeout(cloudSaveTimeout);
+        cloudSaveTimeout = setTimeout(saveDataToCloudNow, 1200);
+    }
+
+    function saveDataToCloudNow() {
+        if (!currentReportId || currentUserProfile.role === 'supervisor') return;
+
+        const payload = {
+            projectName: document.getElementById('meta-project').value,
+            inspector: document.getElementById('meta-inspector').value,
+            location: document.getElementById('meta-location').value,
+            date: document.getElementById('meta-date').value,
+            sections: [],
+            photoLog: uploadedImages
+        };
+
+        document.querySelectorAll('.category-block').forEach(block => {
+            const headingEl = block.querySelector('.section-title');
+            const heading = headingEl.innerText;
+            const rawKey = headingEl.getAttribute('data-raw-title');
+            const items = [];
+
+            block.querySelectorAll('.checklist-item').forEach(item => {
+                const textBlock = item.querySelector('.text-sm.font-semibold');
+                const textInput = item.querySelector('textarea');
+                const taskValue = textBlock ? textBlock.innerText : (textInput ? textInput.value : "");
+
+                items.push({
+                    id: item.id,
+                    task: taskValue,
+                    status: item.getAttribute('data-status-state') || 'ns',
+                    remark: item.querySelector('input[type="text"]').value || '',
+                    isFixed: !textInput
+                });
+            });
+            payload.sections.push({ heading: heading, rawKey: rawKey, items: items });
+        });
+
+        db.collection('reports').doc(currentReportId).update(payload)
+            .then(() => setSyncUIState('synced'))
+            .catch(err => { console.error(err); setSyncUIState('error'); });
+    }
+
+    function updateGalleryView() {
         const grid = document.getElementById('gallery-grid');
         const msg = document.getElementById('no-photo-msg');
         grid.innerHTML = '';
-        
+
         const keys = Object.keys(uploadedImages);
         if (keys.length === 0) { msg.style.display = 'block'; return; }
         msg.style.display = 'none';
@@ -944,43 +641,106 @@
         keys.forEach(id => {
             const card = document.getElementById(id);
             if (!card) return;
+            const taskText = card.querySelector('.text-sm.font-semibold')?.innerText || card.querySelector('textarea')?.value || "Custom Parameters";
+            const remarkText = card.querySelector('input[type="text"]').value || "No operational metrics stated.";
 
-            let nameText = "Custom Item Log";
-            const inlineTextEl = card.querySelector('.task-text-block');
-            if(inlineTextEl) nameText = inlineTextEl.innerText.trim();
-            else {
-                const inputEl = card.querySelector('.task-editable-input');
-                if(inputEl) nameText = inputEl.value.trim() || "Custom Item Log";
-            }
-
-            const remarkValue = card.querySelector('.remark-input').value || "No remarks stated.";
-            const statusState = card.getAttribute('data-status-state');
-            const base64 = uploadedImages[id];
-
-            let statusLabel = "Not Started";
-            let badgeColor = "var(--color-ns)";
-            if(statusState === "ip") { statusLabel = "Under Construction"; badgeColor = "var(--color-ip)"; }
-            if(statusState === "cp") { statusLabel = "Completed"; badgeColor = "var(--color-cp)"; }
-
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
-            item.innerHTML = `
-                <img class="gallery-img" src="${base64}" alt="Attachment">
-                <div class="gallery-title">${nameText}</div>
-                <div class="gallery-status-badge" style="background-color: ${badgeColor}">${statusLabel}</div>
-                <div class="gallery-remark"><strong>Observations:</strong> ${remarkValue}</div>
+            const div = document.createElement('div');
+            div.className = 'bg-slate-50 border border-slate-100 p-3 rounded-xl shadow-inner';
+            div.innerHTML = `
+                <img class="w-full h-40 object-cover rounded-lg border border-slate-200 bg-white mb-2" src="${uploadedImages[id]}">
+                <div class="text-xs font-bold text-slate-800 line-clamp-1">${taskText}</div>
+                <div class="text-[11px] text-slate-500 bg-white p-2 rounded border border-slate-100 mt-1"><strong>Notes:</strong> ${remarkText}</div>
             `;
-            grid.appendChild(item);
+            grid.appendChild(div);
         });
     }
 
-    window.onload = function() {
-        // Core standard defaults initialization maps directly to master template keys
-        masterQuestionTemplates["Hall"].forEach(q => createUnifiedRow('sec-1-body', q, true));
-        masterQuestionTemplates["Bedroom"].forEach(q => createUnifiedRow('sec-2-body', q, true));
-        masterQuestionTemplates["Kitchen"].forEach(q => createUnifiedRow('sec-3-body', q, true));
-        masterQuestionTemplates["Toilet"].forEach(q => createUnifiedRow('sec-4-body', q, true));
-    };
+    function handleCategorySelection(choice) {
+        closeCategorySelectorModal();
+        let name = choice === 'custom' ? prompt("Enter custom segment identifier string:") : choice;
+        if(!name) return;
+
+        const sIdx = document.querySelectorAll('.category-block').length + 1;
+        appendCategoryBlockToDOM(`sec-custom-${Date.now()}`, `${sIdx}. ${name}`, choice, masterQuestionTemplates[name] || [], false);
+        saveDataToCloudNow();
+    }
+
+    function deleteItemRowDOM(id) { if(confirm("Purge check-item?")) { document.getElementById(id).remove(); if(uploadedImages[id]) delete uploadedImages[id]; saveDataToCloudNow(); } }
+    function deleteCategoryBlock(id) { if(confirm("Purge structural section?")) { document.getElementById(id).remove(); saveDataToCloudNow(); } }
+    
+    function returnToDashboard() { 
+        if(cloudUnsubscribeListener) cloudUnsubscribeListener();
+        if(currentUserProfile.role === 'supervisor') loadSupervisorDashboard(); 
+        else loadEngineerDashboard(currentUserProfile.uid); 
+    }
+
+    function setSyncUIState(state) {
+        const pulse = document.getElementById('sync-pulse');
+        const dot = document.getElementById('sync-dot');
+        const txt = document.getElementById('sync-text');
+        if(!dot || !txt) return;
+        
+        if(state==='saving'){
+            pulse.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+            dot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
+            txt.innerText='Syncing updates to cloud database...'; 
+        }
+        else if(state==='synced'){
+            pulse.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+            dot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+            txt.innerText='All changes locked to cloud database.'; 
+        }
+        else if(state==='loading'){
+            pulse.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75";
+            dot.className = "relative inline-flex rounded-full h-2 w-2 bg-blue-500";
+            txt.innerText='Re-indexing active project profiles...'; 
+        }
+    }
+
+    function getStatusLabel(v) { return v==='cp'?"Completed":v==='ip'?"In Progress":"Not Started"; }
+    
+    // Explicit modal overlay bindings utilizing class mappings independent of layouts
+    function openPhotoWizard(id) { 
+        activeModalRowId = id; 
+        const modal = document.getElementById('photo-wizard-modal');
+        modal.classList.remove('modal-hidden');
+        modal.classList.add('modal-visible');
+    }
+    function closePhotoWizard() { 
+        const modal = document.getElementById('photo-wizard-modal');
+        modal.classList.remove('modal-visible');
+        modal.classList.add('modal-hidden');
+    }
+    function openCategorySelectorModal() { 
+        const modal = document.getElementById('category-selector-modal');
+        modal.classList.remove('modal-hidden');
+        modal.classList.add('modal-visible');
+    }
+    function closeCategorySelectorModal() { 
+        const modal = document.getElementById('category-selector-modal');
+        modal.classList.remove('modal-visible');
+        modal.classList.add('modal-hidden');
+    }
+    
+    function executeModalAction(mode) {
+        if(mode==='camera') document.getElementById('file-camera-'+activeModalRowId).click();
+        else document.getElementById('file-browse-'+activeModalRowId).click();
+        closePhotoWizard();
+    }
+
+    function triggerSmartPrint() {
+        if(document.getElementById('print-filter-toggle').checked) {
+            document.body.classList.add('filter-empty-print');
+            document.querySelectorAll('.checklist-item').forEach(item => {
+                if(item.getAttribute('data-status-state') === 'ns' && !item.querySelector('input[type="text"]').value.trim() && !uploadedImages[item.id]) {
+                    item.classList.add('print-hidden-empty');
+                }
+            });
+        } else {
+            document.body.classList.remove('filter-empty-print');
+        }
+        window.print();
+    }
 </script>
 
 </body>
